@@ -1,0 +1,448 @@
+* {
+  box-sizing: border-box;
+}
+
+.employee-layout {
+  min-height: 100vh;
+  display: flex;
+  background: #f5f7fb;
+  color: #172033;
+}
+
+/* SIDEBAR */
+
+.employee-sidebar {
+  width: 250px;
+  min-height: 100vh;
+  background: #111827;
+  color: white;
+  padding: 25px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 10px 35px;
+}
+
+.employee-logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.employee-logo h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.employee-logo span {
+  font-size: 10px;
+  color: #818cf8;
+  letter-spacing: 2px;
+}
+
+.employee-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.employee-nav-item {
+  padding: 13px 15px;
+  border-radius: 10px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-nav-item.active {
+  background: #4f46e5;
+  color: white;
+}
+
+.employee-sidebar-bottom {
+  margin-top: auto;
+}
+
+.employee-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 5px;
+  border-top: 1px solid #374151;
+}
+
+.employee-avatar,
+.employee-header-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+.employee-profile strong {
+  display: block;
+  font-size: 14px;
+}
+
+.employee-profile small {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.employee-logout {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: transparent;
+  color: #d1d5db;
+  cursor: pointer;
+}
+
+/* MAIN */
+
+.employee-main {
+  flex: 1;
+  padding: 30px 40px;
+}
+
+/* HEADER */
+
+.employee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.employee-header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.employee-header p {
+  color: #6b7280;
+  margin-top: 7px;
+}
+
+.employee-header-right {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.employee-notification {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: white;
+  border-radius: 10px;
+}
+
+/* STATS */
+
+.employee-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.employee-stat-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.employee-stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.employee-stat-icon.purple {
+  background: #ede9fe;
+}
+
+.employee-stat-icon.orange {
+  background: #ffedd5;
+}
+
+.employee-stat-icon.green {
+  background: #dcfce7;
+}
+
+.employee-stat-card p {
+  margin: 0 0 5px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.employee-stat-card h2 {
+  margin: 0;
+}
+
+/* CARDS */
+
+.create-ticket-card,
+.my-tickets-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 25px;
+}
+
+.employee-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.employee-section-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.employee-section-title p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.ticket-icon {
+  width: 42px;
+  height: 42px;
+  background: #ede9fe;
+  color: #4f46e5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+/* FORM */
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #6366f1;
+}
+
+.form-group textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.create-ticket-btn {
+  align-self: flex-start;
+  padding: 12px 22px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-ticket-btn:hover {
+  background: #4338ca;
+}
+
+/* TICKETS */
+
+.refresh-tickets {
+  padding: 9px 15px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.employee-ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.employee-ticket {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: 0.2s;
+}
+
+.employee-ticket:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.ticket-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.ticket-title-row h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.ticket-description {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ticket-meta {
+  display: flex;
+  gap: 25px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.ticket-meta strong {
+  color: #374151;
+}
+
+.employee-status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.employee-status.assigned {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.employee-status.in-progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.employee-status.resolved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* EMPTY */
+
+.employee-empty {
+  text-align: center;
+  padding: 50px;
+}
+
+.employee-empty div {
+  font-size: 45px;
+}
+
+.employee-empty h3 {
+  margin-bottom: 5px;
+}
+
+.employee-empty p {
+  color: #6b7280;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .employee-sidebar {
+    width: 75px;
+  }
+
+  .employee-logo h2,
+  .employee-logo span,
+  .employee-nav-item,
+  .employee-profile,
+  .employee-logout {
+    font-size: 0;
+  }
+
+  .employee-nav-item span {
+    font-size: 18px;
+  }
+
+  .employee-main {
+    padding: 20px;
+  }
+
+  .employee-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-header h1 {
+    font-size: 23px;
+  }
+}

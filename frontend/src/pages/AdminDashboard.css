@@ -1,0 +1,390 @@
+.admin-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1f2937;
+}
+
+/* HEADER */
+
+.admin-header {
+  background: #111827;
+  color: white;
+
+  padding: 22px 50px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.admin-header p {
+  margin: 5px 0 0;
+  color: #9ca3af;
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-logout {
+  border: none;
+  background: #ef4444;
+  color: white;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.admin-logout:hover {
+  background: #dc2626;
+}
+
+/* MAIN */
+
+.admin-container {
+  max-width: 1250px;
+  margin: auto;
+  padding: 40px 30px;
+}
+
+.admin-title {
+  margin-bottom: 30px;
+}
+
+.admin-title h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.admin-title p {
+  margin: 0;
+  color: #6b7280;
+}
+
+/* STATS */
+
+.admin-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 18px;
+
+  margin-bottom: 40px;
+}
+
+.admin-stat-card {
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  padding: 22px;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.admin-stat-card span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.admin-stat-card strong {
+  display: block;
+
+  font-size: 30px;
+
+  margin: 8px 0;
+}
+
+.admin-stat-card small {
+  color: #9ca3af;
+}
+
+/* TICKETS SECTION */
+
+.tickets-section {
+  margin-top: 20px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  margin: 0 0 6px;
+}
+
+.section-heading p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.ticket-count {
+  background: #eef2ff;
+  color: #4f46e5;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* TICKET GRID */
+
+.admin-ticket-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(350px, 1fr)
+    );
+
+  gap: 22px;
+}
+
+/* TICKET CARD */
+
+.admin-ticket-card {
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  padding: 24px;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04);
+
+  transition: 0.2s;
+}
+
+.admin-ticket-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* HEADER */
+
+.admin-ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 15px;
+}
+
+.admin-ticket-header h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.admin-category {
+  display: inline-block;
+
+  background: #eef2ff;
+  color: #4f46e5;
+
+  padding: 5px 10px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* PRIORITY */
+
+.admin-priority {
+  padding: 6px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-priority.low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-priority.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-priority.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.admin-priority.critical {
+  background: #7f1d1d;
+  color: white;
+}
+
+/* DESCRIPTION */
+
+.admin-description {
+  color: #6b7280;
+
+  line-height: 1.6;
+
+  margin: 20px 0;
+}
+
+/* INFO */
+
+.admin-ticket-info {
+  border-top: 1px solid #e5e7eb;
+
+  padding-top: 16px;
+
+  display: grid;
+
+  gap: 12px;
+}
+
+.admin-ticket-info div {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.admin-ticket-info span {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.admin-ticket-info strong {
+  font-size: 13px;
+  text-align: right;
+}
+
+/* ASSIGNMENT */
+
+.assignment-section {
+  margin-top: 20px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.assignment-section label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #6b7280;
+}
+
+.assignment-section select {
+  width: 100%;
+
+  padding: 11px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 8px;
+
+  background: white;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+/* EMPTY */
+
+.admin-empty {
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  padding: 60px 20px;
+
+  text-align: center;
+}
+
+.admin-empty h3 {
+  margin-bottom: 8px;
+}
+
+.admin-empty p {
+  color: #6b7280;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+  .admin-stats {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+
+  .admin-header {
+    padding: 20px;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 20px;
+  }
+
+  .admin-user {
+    width: 100%;
+
+    justify-content: space-between;
+  }
+
+  .admin-container {
+    padding: 25px 15px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+}
