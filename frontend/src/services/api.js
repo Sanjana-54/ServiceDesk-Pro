@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://servicedesk-pro-backend.onrender.com",
+  baseURL: "https://servicedesk-pro-backend.onrender.com/api",
   withCredentials: true,
 });
 
