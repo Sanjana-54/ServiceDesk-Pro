@@ -1,4 +1,6 @@
-.employee-dashboard {
+/* ================= PAGE ================= */
+
+.employee-page {
   min-height: 100vh;
   display: flex;
   background: #f6f7fb;
@@ -18,7 +20,7 @@
   z-index: 10;
 }
 
-.employee-brand {
+.employee-logo {
   height: 88px;
   padding: 0 24px;
   display: flex;
@@ -27,37 +29,35 @@
   border-bottom: 1px solid #eef0f4;
 }
 
-.employee-logo {
+.employee-logo-icon {
   width: 43px;
   height: 43px;
   border-radius: 12px;
   background: #4f46e5;
-  color: #ffffff;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
 }
 
-.employee-brand h2 {
+.employee-logo h2 {
   margin: 0;
   font-size: 18px;
-  color: #172033;
 }
 
-.employee-brand span {
+.employee-logo span {
   color: #4f46e5;
   font-weight: 700;
 }
 
-/* NAVIGATION */
+/* ================= NAVIGATION ================= */
 
 .employee-nav {
   padding: 25px 15px;
 }
 
-.employee-nav button {
+.nav-item {
   width: 100%;
   border: none;
   background: transparent;
@@ -71,45 +71,38 @@
   font-size: 14px;
   cursor: pointer;
   text-align: left;
-  transition: 0.2s;
 }
 
-.employee-nav button:hover {
+.nav-item:hover {
   background: #f3f4ff;
   color: #4f46e5;
 }
 
-.employee-nav button.active {
+.nav-item.active {
   background: #eef0ff;
   color: #4f46e5;
   font-weight: 600;
 }
 
-.employee-nav-icon {
-  width: 20px;
-  text-align: center;
-  font-size: 16px;
-}
+/* ================= SIDEBAR BOTTOM ================= */
 
-/* SIDEBAR BOTTOM */
-
-.employee-sidebar-bottom {
+.sidebar-bottom {
   margin-top: auto;
   padding: 18px;
   border-top: 1px solid #e5e7eb;
 }
 
-.employee-user {
+.sidebar-user {
   display: flex;
   align-items: center;
   gap: 11px;
   margin-bottom: 17px;
 }
 
-.employee-avatar {
+.user-avatar,
+.header-avatar {
   width: 40px;
   height: 40px;
-  flex-shrink: 0;
   border-radius: 50%;
   background: #4f46e5;
   color: white;
@@ -119,19 +112,22 @@
   font-weight: 600;
 }
 
-.employee-user strong {
+.sidebar-user-info strong,
+.sidebar-user-info span {
   display: block;
+}
+
+.sidebar-user-info strong {
   font-size: 14px;
 }
 
-.employee-user small {
-  display: block;
-  margin-top: 2px;
+.sidebar-user-info span {
   color: #9ca3af;
   font-size: 12px;
+  margin-top: 3px;
 }
 
-.employee-logout {
+.sidebar-logout {
   width: 100%;
   padding: 10px;
   border: 1px solid #e1e4ea;
@@ -139,10 +135,9 @@
   border-radius: 9px;
   color: #667085;
   cursor: pointer;
-  font-size: 13px;
 }
 
-.employee-logout:hover {
+.sidebar-logout:hover {
   border-color: #ef4444;
   color: #ef4444;
 }
@@ -155,11 +150,11 @@
   min-height: 100vh;
 }
 
-/* TOP BAR */
+/* ================= HEADER ================= */
 
-.employee-topbar {
+.employee-header {
   height: 88px;
-  background: #ffffff;
+  background: white;
   border-bottom: 1px solid #e6e8ee;
   display: flex;
   align-items: center;
@@ -167,110 +162,79 @@
   padding: 0 55px;
 }
 
-.employee-topbar h3 {
+.employee-header h1 {
   margin: 0;
-  font-size: 17px;
+  font-size: 22px;
 }
 
-.employee-topbar p {
-  margin: 4px 0 0;
+.employee-header p {
+  margin: 5px 0 0;
   color: #9ca3af;
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.employee-profile {
+.header-user {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.employee-profile-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #4f46e5;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
+.header-user strong,
+.header-user span {
+  display: block;
 }
 
-.employee-profile-name {
+.header-user strong {
   font-size: 13px;
-  font-weight: 600;
 }
 
-.employee-profile-role {
-  font-size: 11px;
+.header-user span {
   color: #9ca3af;
+  font-size: 11px;
   margin-top: 2px;
 }
 
-/* CONTENT */
+/* ================= CONTENT / WELCOME ================= */
 
-.employee-content {
-  padding: 42px 55px 60px;
-  max-width: 1250px;
+.employee-welcome,
+.employee-stats,
+.tickets-section {
+  margin-left: 55px;
+  margin-right: 55px;
 }
-
-/* PAGE HEADING */
-
-.employee-page-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 25px;
-}
-
-.employee-page-heading h1 {
-  margin: 0 0 6px;
-  font-size: 29px;
-  letter-spacing: -0.5px;
-}
-
-.employee-page-heading p {
-  margin: 0;
-  color: #8a93a5;
-  font-size: 14px;
-}
-
-/* ================= WELCOME CARD ================= */
 
 .employee-welcome {
+  margin-top: 35px;
   min-height: 135px;
   padding: 28px 31px;
   border-radius: 15px;
-  background: linear-gradient(
-    135deg,
-    #4f46e5,
-    #6258f5
-  );
+  background: linear-gradient(135deg, #4f46e5, #6258f5);
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.17);
   box-sizing: border-box;
+  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.17);
 }
 
-.employee-welcome-text span {
+.welcome-label {
   font-size: 12px;
   opacity: 0.75;
+  margin: 0;
 }
 
-.employee-welcome-text h2 {
+.employee-welcome h2 {
   margin: 5px 0 7px;
   font-size: 25px;
 }
 
-.employee-welcome-text p {
+.employee-welcome > div > p:last-child {
   margin: 0;
   font-size: 13px;
   opacity: 0.85;
 }
 
-.employee-create-button {
+.create-ticket-button {
   background: white;
   color: #4f46e5;
   border: none;
@@ -278,12 +242,10 @@
   border-radius: 9px;
   font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
 }
 
-.employee-create-button:hover {
+.create-ticket-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 /* ================= STATS ================= */
@@ -292,10 +254,11 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin: 25px 0 34px;
+  margin-top: 25px;
+  margin-bottom: 34px;
 }
 
-.employee-stat {
+.stat-card {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 13px;
@@ -303,15 +266,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  transition: 0.2s;
 }
 
-.employee-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-}
-
-.employee-stat-icon {
+.stat-icon {
   width: 40px;
   height: 40px;
   border-radius: 11px;
@@ -322,43 +279,43 @@
   color: #4f46e5;
 }
 
-.employee-stat:nth-child(2) .employee-stat-icon {
+.stat-icon.open {
   background: #fff5e9;
   color: #f59e0b;
 }
 
-.employee-stat:nth-child(3) .employee-stat-icon {
+.stat-icon.progress {
   background: #eef6ff;
   color: #3b82f6;
 }
 
-.employee-stat:nth-child(4) .employee-stat-icon {
+.stat-icon.resolved {
   background: #eafaf2;
   color: #16a34a;
 }
 
-.employee-stat-label {
+.stat-card span {
   display: block;
   color: #9ca3af;
   font-size: 12px;
   margin-bottom: 4px;
 }
 
-.employee-stat-value {
+.stat-card strong {
   font-size: 23px;
-  font-weight: 700;
 }
 
-/* ================= RECENT TICKETS ================= */
+/* ================= TICKETS SECTION ================= */
 
-.employee-recent {
+.tickets-section {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 15px;
   overflow: hidden;
+  margin-bottom: 40px;
 }
 
-.employee-recent-header {
+.section-heading {
   padding: 23px 25px;
   display: flex;
   align-items: center;
@@ -366,33 +323,176 @@
   border-bottom: 1px solid #eef0f4;
 }
 
-.employee-recent-header h2 {
+.section-heading h2 {
   margin: 0 0 5px;
   font-size: 19px;
 }
 
-.employee-recent-header p {
+.section-heading p {
   margin: 0;
   color: #8a93a5;
   font-size: 12px;
 }
 
-.employee-refresh {
+.view-all-button {
   border: 1px solid #e1e4ea;
   background: white;
   padding: 8px 13px;
   border-radius: 8px;
   color: #667085;
   cursor: pointer;
-  font-size: 12px;
 }
 
-.employee-refresh:hover {
+.view-all-button:hover {
   border-color: #4f46e5;
   color: #4f46e5;
 }
 
-/* EMPTY STATE */
+/* ================= TICKET LIST ================= */
+
+.employee-ticket-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* THIS IS THE IMPORTANT PART */
+
+.employee-ticket-card {
+  padding: 22px 25px;
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  border-bottom: 1px solid #eef0f4;
+  transition: background 0.2s;
+}
+
+.employee-ticket-card:last-child {
+  border-bottom: none;
+}
+
+.employee-ticket-card:hover {
+  background: #fafaff;
+}
+
+.ticket-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ticket-title-row h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #172033;
+}
+
+.employee-ticket-description {
+  margin: 0 0 14px;
+  color: #697386;
+  font-size: 13px;
+}
+
+/* ================= STATUS ================= */
+
+.ticket-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-open {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.status-assigned {
+  background: #eef6ff;
+  color: #2563eb;
+}
+
+.status-progress {
+  background: #eef6ff;
+  color: #2563eb;
+}
+
+.status-resolved {
+  background: #eafaf2;
+  color: #16a34a;
+}
+
+.status-default {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ================= META ================= */
+
+.ticket-meta {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  color: #697386;
+  font-size: 12px;
+}
+
+.ticket-meta strong {
+  color: #172033;
+}
+
+/* ================= PRIORITY ================= */
+
+.ticket-priority {
+  font-weight: 600;
+}
+
+.priority-high {
+  color: #dc2626;
+}
+
+.priority-medium {
+  color: #f59e0b;
+}
+
+.priority-low {
+  color: #16a34a;
+}
+
+.priority-default {
+  color: #697386;
+}
+
+/* ================= ASSIGNEE ================= */
+
+.ticket-assignee {
+  min-width: 160px;
+  padding-left: 20px;
+  border-left: 1px solid #eef0f4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ticket-assignee span {
+  color: #9ca3af;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.ticket-assignee strong {
+  font-size: 13px;
+  color: #172033;
+}
+
+/* ================= EMPTY ================= */
 
 .employee-empty {
   min-height: 280px;
@@ -403,7 +503,7 @@
   text-align: center;
 }
 
-.employee-empty-icon {
+.empty-icon {
   width: 55px;
   height: 55px;
   border-radius: 50%;
@@ -418,16 +518,14 @@
 
 .employee-empty h3 {
   margin: 0 0 6px;
-  font-size: 16px;
 }
 
 .employee-empty p {
-  margin: 0 0 18px;
   color: #9ca3af;
   font-size: 13px;
 }
 
-.employee-empty button {
+.empty-create-button {
   border: none;
   background: #4f46e5;
   color: white;
@@ -437,14 +535,27 @@
   cursor: pointer;
 }
 
-.employee-empty button:hover {
-  background: #4338ca;
+/* ================= LOADING ================= */
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 950px) {
-
   .employee-sidebar {
     width: 220px;
   }
@@ -454,22 +565,23 @@
     width: calc(100% - 220px);
   }
 
-  .employee-topbar {
+  .employee-header {
     padding: 0 30px;
   }
 
-  .employee-content {
-    padding: 35px 30px;
+  .employee-welcome,
+  .employee-stats,
+  .tickets-section {
+    margin-left: 30px;
+    margin-right: 30px;
   }
 
   .employee-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-
 }
 
 @media (max-width: 650px) {
-
   .employee-sidebar {
     display: none;
   }
@@ -479,12 +591,15 @@
     width: 100%;
   }
 
-  .employee-topbar {
+  .employee-header {
     padding: 0 20px;
   }
 
-  .employee-content {
-    padding: 25px 20px;
+  .employee-welcome,
+  .employee-stats,
+  .tickets-section {
+    margin-left: 20px;
+    margin-right: 20px;
   }
 
   .employee-welcome {
@@ -493,7 +608,7 @@
     gap: 20px;
   }
 
-  .employee-create-button {
+  .create-ticket-button {
     width: 100%;
   }
 
@@ -501,4 +616,14 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .employee-ticket-card {
+    flex-direction: column;
+  }
+
+  .ticket-assignee {
+    border-left: none;
+    border-top: 1px solid #eef0f4;
+    padding-left: 0;
+    padding-top: 15px;
+  }
 }
