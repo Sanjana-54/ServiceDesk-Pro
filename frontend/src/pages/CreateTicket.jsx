@@ -77,11 +77,12 @@ function CreateTicket() {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="General">General</option>
+    
             <option value="Hardware">Hardware</option>
             <option value="Software">Software</option>
             <option value="Network">Network</option>
-            <option value="Account">Account</option>
+            <option value="Account">Access</option>
+            <option value="Other">Other</option>
           </select>
         </div>
 
