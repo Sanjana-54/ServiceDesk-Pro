@@ -17,7 +17,7 @@ function EmployeeDashboard() {
     try {
       setLoading(true);
 
-      const response = await api.get("/tickets");
+      const response = await api.get("/tickets/my-tickets");
 
       setTickets(response.data.tickets || []);
     } catch (error) {

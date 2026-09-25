@@ -15,9 +15,9 @@ function MyTickets() {
     try {
       setLoading(true);
 
-      const response = await api.get("/tickets/my");
+      const response = await api.get("/tickets/my-tickets");
 
-      setTickets(response.data);
+      setTickets(response.data.tickets || []);
     } catch (error) {
       console.error("Failed to fetch tickets:", error);
     } finally {
