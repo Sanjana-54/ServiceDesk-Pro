@@ -1,155 +1,272 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import api from "../services/api";
+import "./Register.css";
 
 function Register() {
   const navigate = useNavigate();
 
-  const [name, setName] =
-    useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [email, setEmail] =
-    useState("");
+  const [role, setRole] = useState("Employee");
 
-  const [password, setPassword] =
-    useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [role, setRole] =
-    useState("Employee");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [message, setMessage] =
-    useState("");
+  const getPasswordStrength = () => {
+    if (!password) return "";
 
-  const handleRegister =
-    async (e) => {
-      e.preventDefault();
+    if (password.length < 6) {
+      return "Weak";
+    }
 
-      try {
-        const response =
-          await api.post(
-            "/auth/register",
-            {
-              name,
-              email,
-              password,
-              role,
-            }
-          );
+    if (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    ) {
+      return "Strong";
+    }
 
-        setMessage(
-          response.data.message
-        );
+    return "Medium";
+  };
 
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
-      } catch (error) {
-        setMessage(
-          error.response?.data
-            ?.message ||
-            "Registration failed"
-        );
-      }
-    };
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    setMessage("");
+    setError("");
+
+    if (name.trim().length < 3) {
+      setError("Name must contain at least 3 characters.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must contain at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/register", {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role,
+      });
+
+      setMessage(
+        response.data.message || "Registration successful!"
+      );
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1200);
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const strength = getPasswordStrength();
 
   return (
-    <div>
-      <h1>
-        ServiceDesk Pro
-      </h1>
+    <div className="register-page">
 
-      <h2>
-        Register
-      </h2>
+      <div className="register-card">
 
-      <form
-        onSubmit={handleRegister}
-      >
-        <input
-          placeholder="Name"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          required
-        />
+        <div className="register-header">
+          <div className="logo">SD</div>
 
-        <br />
-        <br />
+          <h1>ServiceDesk Pro</h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          required
-        />
+          <p>Create your support account</p>
+        </div>
 
-        <br />
-        <br />
+        <form onSubmit={handleRegister}>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
-          }
-          required
-        />
+          {/* Name */}
+          <div className="form-group">
+            <label>Full Name</label>
 
-        <br />
-        <br />
+            <input
+              type="text"
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <select
-          value={role}
-          onChange={(e) =>
-            setRole(
-              e.target.value
-            )
-          }
-        >
-          <option>
-            Employee
-          </option>
+          {/* Email */}
+          <div className="form-group">
+            <label>Email Address</label>
 
-          <option>
-            Technician
-          </option>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-          <option>
-            IT Manager
-          </option>
+          {/* Password */}
+          <div className="form-group">
+            <label>Password</label>
 
-          <option>
-            System Admin
-          </option>
-        </select>
+            <div className="password-box">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-        <br />
-        <br />
+              <button
+                type="button"
+                className="show-password"
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
 
-        <button type="submit">
-          Register
-        </button>
-      </form>
+            {password && (
+              <div
+                className={`password-strength ${strength.toLowerCase()}`}
+              >
+                Password strength: <strong>{strength}</strong>
+              </div>
+            )}
+          </div>
 
-      {message && (
-        <p>{message}</p>
-      )}
+          {/* Confirm Password */}
+          <div className="form-group">
+            <label>Confirm Password</label>
 
-      <button
-        onClick={() =>
-          navigate("/")
-        }
-      >
-        Back to Login
-      </button>
+            <div className="password-box">
+              <input
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
+                required
+              />
+
+              <button
+                type="button"
+                className="show-password"
+                onClick={() =>
+                  setShowConfirmPassword(
+                    !showConfirmPassword
+                  )
+                }
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            {confirmPassword &&
+              password !== confirmPassword && (
+                <small className="password-error">
+                  Passwords do not match
+                </small>
+              )}
+          </div>
+
+          {/* Role */}
+          <div className="form-group">
+            <label>Account Type</label>
+
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="Employee">
+                Employee
+              </option>
+
+              <option value="Technician">
+                Technician
+              </option>
+
+              <option value="IT Manager">
+                IT Manager
+              </option>
+            </select>
+
+            <small className="role-info">
+              System Admin accounts should be created
+              securely by an existing administrator.
+            </small>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="message error">
+              ❌ {error}
+            </div>
+          )}
+
+          {/* Success */}
+          {message && (
+            <div className="message success">
+              ✅ {message}
+            </div>
+          )}
+
+          {/* Register */}
+          <button
+            type="submit"
+            className="register-button"
+            disabled={loading}
+          >
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
+
+        </form>
+
+        <div className="login-section">
+          <span>Already have an account?</span>
+
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+          >
+            Back to Login
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }

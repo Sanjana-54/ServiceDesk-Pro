@@ -12,28 +12,27 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      setError("");
+    setError("");
+    setLoading(true);
 
+    try {
       const response = await api.post(
         "/auth/login",
         {
-          email,
+          email: email.trim(),
           password,
         }
       );
 
       const { token, user } = response.data;
 
-      localStorage.setItem(
-        "token",
-        token
-      );
-
+      localStorage.setItem("token", token);
       localStorage.setItem(
         "user",
         JSON.stringify(user)
@@ -51,8 +50,10 @@ function Login() {
     } catch (error) {
       setError(
         error.response?.data?.message ||
-          "Login failed"
+          "Invalid email or password."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,7 +62,7 @@ function Login() {
 
       <div className="login-card">
 
-        {/* Logo / Brand */}
+        {/* Brand */}
 
         <div className="login-brand">
           <div className="brand-icon">
@@ -77,67 +78,129 @@ function Login() {
         {/* Heading */}
 
         <div className="login-heading">
-          <h2>Welcome back</h2>
+          <h2>Welcome back 👋</h2>
 
           <p>
-            Sign in to access your dashboard
+            Sign in to manage your support workspace
           </p>
         </div>
 
-        {/* Login Form */}
+        {/* Form */}
 
         <form
           className="login-form"
           onSubmit={handleLogin}
         >
 
+          {/* Email */}
+
           <div className="form-group">
 
-            <label>
+            <label htmlFor="email">
               Email Address
             </label>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              required
-            />
+            <div className="input-wrapper">
+
+              <span className="input-icon">
+                ✉
+              </span>
+
+              <input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
+                required
+                autoComplete="email"
+              />
+
+            </div>
 
           </div>
+
+          {/* Password */}
 
           <div className="form-group">
 
-            <label>
-              Password
-            </label>
+            <div className="password-label">
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              required
-            />
+              <label htmlFor="password">
+                Password
+              </label>
+
+            </div>
+
+            <div className="input-wrapper">
+
+              <span className="input-icon">
+                🔒
+              </span>
+
+              <input
+                id="password"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                required
+                autoComplete="current-password"
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() =>
+                  setShowPassword(
+                    !showPassword
+                  )
+                }
+              >
+                {showPassword
+                  ? "Hide"
+                  : "Show"}
+              </button>
+
+            </div>
 
           </div>
 
+          {/* Error */}
+
           {error && (
             <div className="login-error">
-              {error}
+              <span>⚠</span>
+
+              <p>{error}</p>
             </div>
           )}
+
+          {/* Login */}
 
           <button
             className="login-button"
             type="submit"
+            disabled={loading}
           >
-            Sign In
+            {loading ? (
+              <>
+                <span className="spinner"></span>
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
 
         </form>
@@ -151,6 +214,7 @@ function Login() {
           </span>
 
           <button
+            type="button"
             onClick={() =>
               navigate("/register")
             }
@@ -158,6 +222,12 @@ function Login() {
             Create account
           </button>
 
+        </div>
+
+        {/* Security */}
+
+        <div className="login-security">
+          🔒 Secure access to your ServiceDesk workspace
         </div>
 
       </div>

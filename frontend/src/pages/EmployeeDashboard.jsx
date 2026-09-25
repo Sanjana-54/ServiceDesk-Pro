@@ -11,17 +11,24 @@ function EmployeeDashboard() {
   const user = getUser();
 
   const [tickets, setTickets] = useState([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Other");
-  const [priority, setPriority] = useState("Medium");
+  const [loading, setLoading] = useState(true);
 
   const fetchTickets = async () => {
     try {
-      const response = await api.get("/tickets/my-tickets");
-      setTickets(response.data.tickets);
+      setLoading(true);
+
+      const response = await api.get("/tickets");
+
+      setTickets(response.data.tickets || []);
     } catch (error) {
       console.error(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Unable to load tickets"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,89 +36,135 @@ function EmployeeDashboard() {
     fetchTickets();
   }, []);
 
-  const createTicket = async (e) => {
-    e.preventDefault();
-
-    try {
-      await api.post("/tickets", {
-        title,
-        description,
-        category,
-        priority,
-      });
-
-      setTitle("");
-      setDescription("");
-      setCategory("Other");
-      setPriority("Medium");
-
-      alert("Ticket created successfully");
-
-      fetchTickets();
-    } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Ticket creation failed"
-      );
-    }
-  };
-
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  return (
-    <div className="employee-layout">
+  const handleCreateTicket = () => {
+    navigate("/create-ticket");
+  };
 
-      {/* SIDEBAR */}
+  const openCount = tickets.filter(
+    (ticket) =>
+      ticket.status === "Open" ||
+      ticket.status === "Assigned"
+  ).length;
+
+  const progressCount = tickets.filter(
+    (ticket) => ticket.status === "In Progress"
+  ).length;
+
+  const resolvedCount = tickets.filter(
+    (ticket) => ticket.status === "Resolved"
+  ).length;
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Open":
+        return "status-open";
+
+      case "Assigned":
+        return "status-assigned";
+
+      case "In Progress":
+        return "status-progress";
+
+      case "Resolved":
+        return "status-resolved";
+
+      default:
+        return "status-default";
+    }
+  };
+
+  const getPriorityClass = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case "high":
+        return "priority-high";
+
+      case "medium":
+        return "priority-medium";
+
+      case "low":
+        return "priority-low";
+
+      default:
+        return "priority-default";
+    }
+  };
+
+  return (
+    <div className="employee-page">
+
+      {/* Sidebar */}
+
       <aside className="employee-sidebar">
 
         <div className="employee-logo">
-          <div className="employee-logo-icon">S</div>
+
+          <div className="employee-logo-icon">
+            SD
+          </div>
 
           <div>
             <h2>ServiceDesk</h2>
-            <span>PRO</span>
+            <span>Pro</span>
           </div>
+
         </div>
 
         <nav className="employee-nav">
 
-          <div className="employee-nav-item active">
-            <span>▣</span>
+          <button className="nav-item active">
+            <span>▦</span>
             Dashboard
-          </div>
+          </button>
 
-          <div className="employee-nav-item">
-            <span>🎫</span>
-            My Tickets
-          </div>
+          <button
+  className="nav-item"
+  onClick={() => navigate("/my-tickets")}
+>
+  <span>▤</span>
+  My Tickets
+</button>
 
-          <div className="employee-nav-item">
+          <button
+            className="nav-item"
+            onClick={handleCreateTicket}
+          >
             <span>＋</span>
             Create Ticket
-          </div>
+          </button>
 
         </nav>
 
-        <div className="employee-sidebar-bottom">
+        <div className="sidebar-bottom">
 
-          <div className="employee-profile">
+          <div className="sidebar-user">
 
-            <div className="employee-avatar">
-              {user?.name?.charAt(0) || "E"}
+            <div className="user-avatar">
+              {user?.name
+                ? user.name
+                    .charAt(0)
+                    .toUpperCase()
+                : "U"}
             </div>
 
-            <div>
-              <strong>{user?.name || "Employee"}</strong>
-              <small>Employee</small>
+            <div className="sidebar-user-info">
+              <strong>
+                {user?.name || "User"}
+              </strong>
+
+              <span>
+                Employee
+              </span>
             </div>
 
           </div>
 
           <button
-            className="employee-logout"
+            className="sidebar-logout"
             onClick={handleLogout}
           >
             Logout
@@ -121,236 +174,192 @@ function EmployeeDashboard() {
 
       </aside>
 
-      {/* MAIN */}
+      {/* Main */}
+
       <main className="employee-main">
 
-        {/* HEADER */}
+        {/* Top Header */}
+
         <header className="employee-header">
 
           <div>
-            <h1>Employee Dashboard</h1>
+            <h1>Dashboard</h1>
 
             <p>
-              Welcome back, {user?.name || "Employee"} 👋
+              Manage your support requests
+              and track their progress.
             </p>
           </div>
 
-          <div className="employee-header-right">
+          <div className="header-user">
 
-            <button className="employee-notification">
-              🔔
-            </button>
+            <div className="header-avatar">
+              {user?.name
+                ? user.name
+                    .charAt(0)
+                    .toUpperCase()
+                : "U"}
+            </div>
 
-            <div className="employee-header-avatar">
-              {user?.name?.charAt(0) || "E"}
+            <div>
+              <strong>
+                {user?.name || "User"}
+              </strong>
+
+              <span>
+                Employee
+              </span>
             </div>
 
           </div>
 
         </header>
 
-        {/* QUICK STATS */}
+        {/* Welcome */}
+
+        <section className="employee-welcome">
+
+          <div>
+            <p className="welcome-label">
+              Welcome back
+            </p>
+
+            <h2>
+              Hello, {user?.name || "there"} 👋
+            </h2>
+
+            <p>
+              Need help with something?
+              Create a support ticket and
+              our team will take care of it.
+            </p>
+          </div>
+
+          <button
+            className="create-ticket-button"
+            onClick={handleCreateTicket}
+          >
+            <span>＋</span>
+            Create New Ticket
+          </button>
+
+        </section>
+
+        {/* Statistics */}
+
         <section className="employee-stats">
 
-          <div className="employee-stat-card">
+          <div className="stat-card">
 
-            <div className="employee-stat-icon purple">
-              🎫
+            <div className="stat-icon total">
+              ▦
             </div>
 
             <div>
-              <p>Total Tickets</p>
-              <h2>{tickets.length}</h2>
+              <span>Total Tickets</span>
+              <strong>{tickets.length}</strong>
             </div>
 
           </div>
 
-          <div className="employee-stat-card">
+          <div className="stat-card">
 
-            <div className="employee-stat-icon orange">
-              ⚡
+            <div className="stat-icon open">
+              ◷
             </div>
 
             <div>
-              <p>Open Tickets</p>
-
-              <h2>
-                {
-                  tickets.filter(
-                    (ticket) =>
-                      ticket.status === "Open"
-                  ).length
-                }
-              </h2>
+              <span>Open Tickets</span>
+              <strong>{openCount}</strong>
             </div>
 
           </div>
 
-          <div className="employee-stat-card">
+          <div className="stat-card">
 
-            <div className="employee-stat-icon green">
+            <div className="stat-icon progress">
+              ↻
+            </div>
+
+            <div>
+              <span>In Progress</span>
+              <strong>{progressCount}</strong>
+            </div>
+
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-icon resolved">
               ✓
             </div>
 
             <div>
-              <p>Resolved</p>
-
-              <h2>
-                {
-                  tickets.filter(
-                    (ticket) =>
-                      ticket.status === "Resolved"
-                  ).length
-                }
-              </h2>
+              <span>Resolved</span>
+              <strong>{resolvedCount}</strong>
             </div>
 
           </div>
 
         </section>
 
-        {/* CREATE TICKET */}
-        <section className="create-ticket-card">
+        {/* Tickets */}
 
-          <div className="employee-section-title">
+        <section className="tickets-section">
 
-            <div>
-              <h2>Create a Support Ticket</h2>
-
-              <p>
-                Describe your issue and our IT team
-                will help you.
-              </p>
-            </div>
-
-            <div className="ticket-icon">
-              +
-            </div>
-
-          </div>
-
-          <form
-            className="ticket-form"
-            onSubmit={createTicket}
-          >
-
-            <div className="form-group">
-
-              <label>Ticket Title</label>
-
-              <input
-                placeholder="Example: Laptop is not connecting to Wi-Fi"
-                value={title}
-                onChange={(e) =>
-                  setTitle(e.target.value)
-                }
-                required
-              />
-
-            </div>
-
-            <div className="form-group">
-
-              <label>Description</label>
-
-              <textarea
-                placeholder="Explain your problem in detail..."
-                value={description}
-                onChange={(e) =>
-                  setDescription(e.target.value)
-                }
-                required
-              />
-
-            </div>
-
-            <div className="form-row">
-
-              <div className="form-group">
-
-                <label>Category</label>
-
-                <select
-                  value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value)
-                  }
-                >
-                  <option>Hardware</option>
-                  <option>Software</option>
-                  <option>Network</option>
-                  <option>Access</option>
-                  <option>Other</option>
-                </select>
-
-              </div>
-
-              <div className="form-group">
-
-                <label>Priority</label>
-
-                <select
-                  value={priority}
-                  onChange={(e) =>
-                    setPriority(e.target.value)
-                  }
-                >
-                  <option>Low</option>
-                  <option>Medium</option>
-                  <option>High</option>
-                  <option>Critical</option>
-                </select>
-
-              </div>
-
-            </div>
-
-            <button
-              className="create-ticket-btn"
-              type="submit"
-            >
-              Create Ticket
-            </button>
-
-          </form>
-
-        </section>
-
-        {/* MY TICKETS */}
-        <section className="my-tickets-card">
-
-          <div className="employee-section-title">
+          <div className="section-heading">
 
             <div>
-              <h2>My Tickets</h2>
+              <h2>My Recent Tickets</h2>
 
               <p>
-                Track the support requests you have
-                submitted.
+                Track the status of your
+                support requests.
               </p>
             </div>
 
             <button
-              className="refresh-tickets"
+              className="view-all-button"
               onClick={fetchTickets}
             >
-              ↻ Refresh
+              Refresh
             </button>
 
           </div>
 
-          {tickets.length === 0 ? (
+          {loading ? (
+            <div className="employee-empty">
+
+              <div className="loading-spinner"></div>
+
+              <p>
+                Loading your tickets...
+              </p>
+
+            </div>
+          ) : tickets.length === 0 ? (
 
             <div className="employee-empty">
 
-              <div>🎫</div>
+              <div className="empty-icon">
+                ◫
+              </div>
 
-              <h3>No tickets yet</h3>
+              <h3>
+                No tickets yet
+              </h3>
 
               <p>
-                Create your first support ticket
-                using the form above.
+                You haven't created any
+                support tickets.
               </p>
+
+              <button
+                onClick={handleCreateTicket}
+                className="empty-create-button"
+              >
+                Create Your First Ticket
+              </button>
 
             </div>
 
@@ -361,7 +370,7 @@ function EmployeeDashboard() {
               {tickets.map((ticket) => (
 
                 <div
-                  className="employee-ticket"
+                  className="employee-ticket-card"
                   key={ticket._id}
                 >
 
@@ -369,35 +378,60 @@ function EmployeeDashboard() {
 
                     <div className="ticket-title-row">
 
-                      <h3>{ticket.title}</h3>
+                      <h3>
+                        {ticket.title}
+                      </h3>
 
                       <span
-                        className={`employee-status ${ticket.status
-                          ?.toLowerCase()
-                          .replace(" ", "-")}`}
+                        className={`ticket-status ${getStatusClass(
+                          ticket.status
+                        )}`}
                       >
                         {ticket.status}
                       </span>
 
                     </div>
 
-                    <p className="ticket-description">
+                    <p className="employee-ticket-description">
                       {ticket.description}
                     </p>
 
                     <div className="ticket-meta">
 
                       <span>
-                        Category:{" "}
-                        <strong>{ticket.category}</strong>
+                        <strong>
+                          Category:
+                        </strong>{" "}
+                        {ticket.category || "General"}
                       </span>
 
                       <span>
-                        Priority:{" "}
-                        <strong>{ticket.priority}</strong>
+                        <strong>
+                          Priority:
+                        </strong>{" "}
+                        <span
+                          className={`ticket-priority ${getPriorityClass(
+                            ticket.priority
+                          )}`}
+                        >
+                          {ticket.priority || "Normal"}
+                        </span>
                       </span>
 
                     </div>
+
+                  </div>
+
+                  <div className="ticket-assignee">
+
+                    <span>
+                      Assigned Technician
+                    </span>
+
+                    <strong>
+                      {ticket.assignedTo?.name ||
+                        "Not assigned"}
+                    </strong>
 
                   </div>
 
