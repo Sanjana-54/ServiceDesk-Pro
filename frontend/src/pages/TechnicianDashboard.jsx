@@ -12,17 +12,14 @@ function TechnicianDashboard() {
 
   const [tickets, setTickets] = useState([]);
 
-  // ================================
-  // FETCH ASSIGNED TICKETS
-  // ================================
-
+  // Fetch tickets assigned to technician
   const fetchTickets = async () => {
     try {
       const response = await api.get("/tickets/assigned");
 
       setTickets(response.data.tickets || []);
     } catch (error) {
-      console.error("Fetch tickets error:", error);
+      console.error("Fetch technician tickets error:", error);
 
       alert(
         error.response?.data?.message ||
@@ -35,10 +32,7 @@ function TechnicianDashboard() {
     fetchTickets();
   }, []);
 
-  // ================================
-  // UPDATE TICKET STATUS
-  // ================================
-
+  // Update ticket status
   const updateStatus = async (ticketId, status) => {
     try {
       await api.patch(
@@ -48,7 +42,7 @@ function TechnicianDashboard() {
 
       await fetchTickets();
     } catch (error) {
-      console.error("Update status error:", error);
+      console.error("Update ticket status error:", error);
 
       alert(
         error.response?.data?.message ||
@@ -57,18 +51,20 @@ function TechnicianDashboard() {
     }
   };
 
-  // ================================
-  // LOGOUT
-  // ================================
-
+  // Logout
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // ================================
-  // TICKET STATISTICS
-  // ================================
+  // Ticket statistics
+  const inProgressCount = tickets.filter(
+    (ticket) => ticket.status === "In Progress"
+  ).length;
+
+  const resolvedCount = tickets.filter(
+    (ticket) => ticket.status === "Resolved"
+  ).length;
 
   const pendingCount = tickets.filter(
     (ticket) =>
@@ -76,31 +72,15 @@ function TechnicianDashboard() {
       ticket.status === "Open"
   ).length;
 
-  const inProgressCount = tickets.filter(
-    (ticket) =>
-      ticket.status === "In Progress"
-  ).length;
-
-  const resolvedCount = tickets.filter(
-    (ticket) =>
-      ticket.status === "Resolved"
-  ).length;
-
   return (
     <div className="tech-page">
 
-      {/* ================================
-          HEADER
-      ================================= */}
-
+      {/* HEADER */}
       <header className="tech-header">
 
-        <div className="tech-brand">
-
+        <div>
           <h1>ServiceDesk Pro</h1>
-
           <p>Technician Dashboard</p>
-
         </div>
 
         <div className="tech-user">
@@ -120,19 +100,13 @@ function TechnicianDashboard() {
 
       </header>
 
-      {/* ================================
-          MAIN CONTENT
-      ================================= */}
-
+      {/* MAIN CONTENT */}
       <main className="tech-container">
 
         {/* PAGE TITLE */}
-
         <div className="page-title">
 
-          <h2>
-            Assigned Tickets
-          </h2>
+          <h2>Assigned Tickets</h2>
 
           <p>
             Manage and resolve your assigned
@@ -141,14 +115,10 @@ function TechnicianDashboard() {
 
         </div>
 
-        {/* ================================
-            STATISTICS
-        ================================= */}
-
+        {/* STATISTICS */}
         <div className="tech-stats">
 
-          {/* PENDING */}
-
+          {/* Pending */}
           <div className="tech-stat-card">
 
             <span className="stat-label">
@@ -165,8 +135,7 @@ function TechnicianDashboard() {
 
           </div>
 
-          {/* IN PROGRESS */}
-
+          {/* In Progress */}
           <div className="tech-stat-card">
 
             <span className="stat-label">
@@ -183,8 +152,7 @@ function TechnicianDashboard() {
 
           </div>
 
-          {/* RESOLVED */}
-
+          {/* Resolved */}
           <div className="tech-stat-card">
 
             <span className="stat-label">
@@ -203,10 +171,7 @@ function TechnicianDashboard() {
 
         </div>
 
-        {/* ================================
-            TICKETS
-        ================================= */}
-
+        {/* TICKETS */}
         {tickets.length === 0 ? (
 
           <div className="empty-state">
@@ -234,7 +199,6 @@ function TechnicianDashboard() {
               >
 
                 {/* TICKET HEADER */}
-
                 <div className="ticket-card-header">
 
                   <div>
@@ -253,8 +217,7 @@ function TechnicianDashboard() {
                     className={`priority ${
                       ticket.priority
                         ?.toLowerCase()
-                        .replace(/\s+/g, "-") ||
-                      "medium"
+                        .replace(/\s+/g, "-") || "medium"
                     }`}
                   >
                     {ticket.priority || "Medium"}
@@ -263,17 +226,14 @@ function TechnicianDashboard() {
                 </div>
 
                 {/* DESCRIPTION */}
-
                 <p className="ticket-description">
                   {ticket.description}
                 </p>
 
                 {/* TICKET INFORMATION */}
-
                 <div className="ticket-info">
 
                   <p>
-
                     <strong>
                       Created By:
                     </strong>
@@ -282,11 +242,9 @@ function TechnicianDashboard() {
                       {ticket.createdBy?.name ||
                         "Unknown"}
                     </span>
-
                   </p>
 
                   <p>
-
                     <strong>
                       Email:
                     </strong>
@@ -295,50 +253,41 @@ function TechnicianDashboard() {
                       {ticket.createdBy?.email ||
                         "N/A"}
                     </span>
-
                   </p>
 
                   <p>
-
                     <strong>
                       Status:
                     </strong>
 
                     <span className="status-badge">
-                      {ticket.status || "Open"}
+                      {ticket.status}
                     </span>
-
                   </p>
 
                 </div>
 
                 {/* STATUS UPDATE */}
-
                 <div className="ticket-actions">
 
-                  <label htmlFor={`status-${ticket._id}`}>
+                  <label>
                     Update Status
                   </label>
 
                   <select
-                    id={`status-${ticket._id}`}
                     value={ticket.status}
+                    disabled={ticket.status === "Resolved"}
                     onChange={(e) =>
                       updateStatus(
                         ticket._id,
                         e.target.value
                       )
                     }
-                    disabled={
-                      ticket.status === "Resolved"
-                    }
                   >
 
-                    {ticket.status === "Assigned" && (
-                      <option value="Assigned">
-                        Assigned
-                      </option>
-                    )}
+                    <option value="Assigned">
+                      Assigned
+                    </option>
 
                     <option value="In Progress">
                       In Progress
@@ -349,6 +298,12 @@ function TechnicianDashboard() {
                     </option>
 
                   </select>
+
+                  {ticket.status === "Resolved" && (
+                    <small className="resolved-message">
+                      This ticket has been resolved.
+                    </small>
+                  )}
 
                 </div>
 

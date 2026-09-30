@@ -546,3 +546,21 @@
   }
 
 }
+
+/* RESOLVED TICKET */
+
+.ticket-actions select:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  border-color: #e4e7ec;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.resolved-message {
+  display: block;
+  margin-top: 8px;
+  color: #12b76a;
+  font-size: 12px;
+  font-weight: 600;
+}
