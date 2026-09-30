@@ -204,32 +204,34 @@ function Register() {
           </div>
 
           {/* Role */}
-          <div className="form-group">
-            <label>Account Type</label>
+<div className="form-group">
+  <label>Account Type</label>
 
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="Employee">
-                Employee
-              </option>
+  <select
+    value={role}
+    onChange={(e) => setRole(e.target.value)}
+  >
+    <option value="Employee">
+      Employee
+    </option>
 
-              <option value="Technician">
-                Technician
-              </option>
+    <option value="Technician">
+      Technician
+    </option>
 
-              <option value="IT Manager">
-                IT Manager
-              </option>
-            </select>
+    <option value="IT Manager">
+      IT Manager
+    </option>
 
-            <small className="role-info">
-              System Admin accounts should be created
-              securely by an existing administrator.
-            </small>
-          </div>
+    <option value="System Admin">
+      System Admin
+    </option>
+  </select>
 
+  <small className="role-info">
+    Select the account type for this user.
+  </small>
+</div>
           {/* Error */}
           {error && (
             <div className="message error">
