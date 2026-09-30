@@ -1,16 +1,18 @@
-/* ================================
+/* =========================================
    TECHNICIAN DASHBOARD
-================================ */
+========================================= */
 
-.technician-page {
+.tech-page {
   min-height: 100vh;
-  background: #f6f7fb;
+  background: #f5f7fb;
   color: #172033;
 }
 
-/* HEADER */
+/* =========================================
+   HEADER
+========================================= */
 
-.technician-header {
+.tech-header {
   background: #111827;
   color: white;
 
@@ -20,48 +22,62 @@
   justify-content: space-between;
   align-items: center;
 
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-.technician-brand h1 {
+.tech-header h1 {
   margin: 0;
-  font-size: 25px;
+
+  font-size: 26px;
   font-weight: 700;
+  letter-spacing: -0.4px;
 }
 
-.technician-brand p {
+.tech-header p {
   margin: 5px 0 0;
+
   color: #9ca3af;
+
   font-size: 14px;
 }
 
-.technician-user {
+.tech-user {
   display: flex;
   align-items: center;
   gap: 18px;
+
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.technician-logout {
+.logout-btn {
   border: none;
+
   background: #ef4444;
   color: white;
 
-  padding: 10px 20px;
+  padding: 10px 18px;
+
   border-radius: 8px;
 
+  font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
 
-  transition: 0.2s;
+  transition: 0.2s ease;
 }
 
-.technician-logout:hover {
+.logout-btn:hover {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
-/* MAIN */
+/* =========================================
+   MAIN CONTAINER
+========================================= */
 
-.technician-container {
+.tech-container {
   width: min(1200px, calc(100% - 40px));
 
   margin: 0 auto;
@@ -69,29 +85,36 @@
   padding: 42px 0 60px;
 }
 
-/* TITLE */
+/* =========================================
+   PAGE TITLE
+========================================= */
 
-.technician-title {
+.page-title {
   margin-bottom: 28px;
 }
 
-.technician-title h2 {
+.page-title h2 {
   margin: 0 0 7px;
 
   font-size: 30px;
   font-weight: 750;
+
+  letter-spacing: -0.5px;
 }
 
-.technician-title p {
+.page-title p {
   margin: 0;
 
   color: #6b7280;
+
   font-size: 15px;
 }
 
-/* STATS */
+/* =========================================
+   STATISTICS
+========================================= */
 
-.technician-stats {
+.tech-stats {
   display: grid;
 
   grid-template-columns: repeat(3, 1fr);
@@ -101,29 +124,32 @@
   margin-bottom: 35px;
 }
 
-.technician-stat-card {
+.tech-stat-card {
+  position: relative;
+
   background: white;
 
-  border: 1px solid #e8eaf0;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
 
-  padding: 22px;
+  border-radius: 16px;
 
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  padding: 23px;
 
-  transition: 0.2s;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+
+  transition: all 0.2s ease;
 }
 
-.technician-stat-card:hover {
+.tech-stat-card:hover {
   transform: translateY(-2px);
 
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
-.technician-stat-card span {
+.stat-label {
   display: block;
 
-  color: #6b7280;
+  color: #667085;
 
   font-size: 13px;
   font-weight: 600;
@@ -131,216 +157,215 @@
   margin-bottom: 9px;
 }
 
-.technician-stat-card strong {
+.tech-stat-card strong {
   display: block;
 
-  font-size: 30px;
+  color: #172033;
+
+  font-size: 32px;
   line-height: 1;
 }
 
-.technician-stat-card small {
+.tech-stat-card small {
   display: block;
 
   margin-top: 10px;
 
-  color: #9ca3af;
-}
-
-/* TICKETS SECTION */
-
-.technician-tickets-section {
-  background: white;
-
-  border: 1px solid #e8eaf0;
-
-  border-radius: 18px;
-
-  padding: 28px;
-
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-}
-
-.technician-section-heading {
-  display: flex;
-
-  justify-content: space-between;
-  align-items: center;
-
-  margin-bottom: 25px;
-
-  padding-bottom: 20px;
-
-  border-bottom: 1px solid #edf0f4;
-}
-
-.technician-section-heading h2 {
-  margin: 0 0 5px;
-
-  font-size: 21px;
-}
-
-.technician-section-heading p {
-  margin: 0;
-
-  color: #8a94a6;
-
-  font-size: 14px;
-}
-
-.technician-ticket-count {
-  background: #eef2ff;
-
-  color: #4f46e5;
-
-  padding: 8px 14px;
-
-  border-radius: 20px;
+  color: #98a2b3;
 
   font-size: 13px;
-  font-weight: 700;
 }
 
-/* TICKET GRID */
+/* =========================================
+   TICKET GRID
+========================================= */
 
-.technician-ticket-grid {
+.tech-ticket-grid {
   display: grid;
 
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 20px;
+  gap: 22px;
 }
 
-/* TICKET CARD */
+/* =========================================
+   TICKET CARD
+========================================= */
 
-.technician-ticket-card {
+.tech-ticket-card {
   background: white;
 
-  border: 1px solid #e7eaf0;
+  border: 1px solid #e5e7eb;
 
-  border-radius: 15px;
+  border-radius: 16px;
 
-  padding: 22px;
+  padding: 24px;
 
-  transition: 0.2s;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+
+  transition: all 0.2s ease;
 }
 
-.technician-ticket-card:hover {
-  transform: translateY(-2px);
+.tech-ticket-card:hover {
+  transform: translateY(-3px);
 
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
 }
 
-/* CARD HEADER */
+/* =========================================
+   TICKET HEADER
+========================================= */
 
-.technician-ticket-header {
+.ticket-card-header {
   display: flex;
 
   justify-content: space-between;
   align-items: flex-start;
 
-  gap: 15px;
+  gap: 16px;
 }
 
-.technician-ticket-header h3 {
+.ticket-card-header h3 {
   margin: 0 0 9px;
 
-  font-size: 18px;
+  color: #172033;
+
+  font-size: 19px;
+  font-weight: 700;
+
+  line-height: 1.35;
 }
 
-.technician-category {
+.ticket-category {
   display: inline-block;
 
   background: #eef2ff;
-
   color: #4f46e5;
 
   padding: 5px 10px;
 
-  border-radius: 6px;
+  border-radius: 7px;
 
   font-size: 11px;
   font-weight: 700;
 }
 
-/* PRIORITY */
+/* =========================================
+   PRIORITY
+========================================= */
 
-.technician-priority {
+.priority {
+  flex-shrink: 0;
+
   padding: 6px 11px;
 
   border-radius: 20px;
 
   font-size: 11px;
-
   font-weight: 700;
 }
 
-.technician-priority.low {
+.priority.low {
   background: #dcfce7;
   color: #166534;
 }
 
-.technician-priority.medium {
+.priority.medium {
   background: #fef3c7;
   color: #92400e;
 }
 
-.technician-priority.high {
+.priority.high {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-.technician-priority.critical {
+.priority.critical {
   background: #991b1b;
   color: white;
 }
 
-/* DESCRIPTION */
+/* =========================================
+   DESCRIPTION
+========================================= */
 
-.technician-description {
-  margin: 18px 0;
+.ticket-description {
+  margin: 20px 0;
 
   color: #667085;
 
   font-size: 14px;
 
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* INFO */
+/* =========================================
+   TICKET INFORMATION
+========================================= */
 
-.technician-ticket-info {
+.ticket-info {
   border-top: 1px solid #edf0f4;
 
-  padding-top: 16px;
+  padding-top: 17px;
 
   display: grid;
 
-  gap: 11px;
+  gap: 12px;
 }
 
-.technician-ticket-info div {
+.ticket-info p {
+  margin: 0;
+
   display: flex;
 
   justify-content: space-between;
 
-  gap: 20px;
-}
+  align-items: center;
 
-.technician-ticket-info span {
-  color: #8a94a6;
+  gap: 15px;
 
-  font-size: 12px;
-}
+  color: #667085;
 
-.technician-ticket-info strong {
   font-size: 13px;
+}
 
+.ticket-info strong {
+  color: #667085;
+
+  font-weight: 600;
+}
+
+.ticket-info p > *:last-child {
   text-align: right;
 }
 
-/* STATUS */
+/* =========================================
+   STATUS BADGE
+========================================= */
 
-.technician-status-section {
+.status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  background: #eef2ff;
+
+  color: #4f46e5;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+/* =========================================
+   STATUS UPDATE
+========================================= */
+
+.ticket-actions {
   margin-top: 20px;
 
   padding-top: 18px;
@@ -348,7 +373,7 @@
   border-top: 1px solid #edf0f4;
 }
 
-.technician-status-section label {
+.ticket-actions label {
   display: block;
 
   margin-bottom: 8px;
@@ -356,10 +381,11 @@
   color: #667085;
 
   font-size: 12px;
+
   font-weight: 700;
 }
 
-.technician-status-section select {
+.ticket-actions select {
   width: 100%;
 
   box-sizing: border-box;
@@ -379,54 +405,73 @@
   cursor: pointer;
 
   outline: none;
+
+  transition: 0.2s ease;
 }
 
-.technician-status-section select:focus {
+.ticket-actions select:hover {
+  border-color: #aeb5c2;
+}
+
+.ticket-actions select:focus {
   border-color: #6366f1;
 
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: white;
+
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* EMPTY */
+/* =========================================
+   EMPTY STATE
+========================================= */
 
-.technician-empty {
+.empty-state {
   background: white;
 
   border: 1px dashed #d7dce5;
 
-  border-radius: 15px;
+  border-radius: 16px;
 
-  padding: 65px 20px;
+  padding: 70px 20px;
 
   text-align: center;
+
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
 }
 
-.technician-empty h3 {
+.empty-state h3 {
   margin: 0 0 8px;
 
-  font-size: 18px;
+  color: #172033;
+
+  font-size: 19px;
 }
 
-.technician-empty p {
+.empty-state p {
   margin: 0;
 
   color: #7b8495;
+
+  font-size: 14px;
 }
 
-/* RESPONSIVE */
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 900px) {
-  .technician-stats {
+  .tech-stats {
     grid-template-columns: 1fr;
   }
 
-  .technician-ticket-grid {
+  .tech-ticket-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 650px) {
-  .technician-header {
+  .tech-header {
     padding: 18px 22px;
 
     flex-direction: column;
@@ -436,27 +481,43 @@
     gap: 16px;
   }
 
-  .technician-user {
+  .tech-user {
     width: 100%;
 
     justify-content: space-between;
   }
 
-  .technician-container {
+  .tech-container {
     width: calc(100% - 30px);
 
     padding: 28px 0 45px;
   }
 
-  .technician-tickets-section {
+  .page-title h2 {
+    font-size: 26px;
+  }
+
+  .tech-ticket-card {
     padding: 20px;
   }
 
-  .technician-section-heading {
+  .ticket-card-header {
     flex-direction: column;
+  }
 
+  .ticket-info p {
     align-items: flex-start;
 
-    gap: 15px;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .ticket-info p > *:last-child {
+    text-align: left;
+  }
+
+  .priority {
+    align-self: flex-start;
   }
 }
