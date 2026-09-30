@@ -208,29 +208,17 @@ function Register() {
   <label>Account Type</label>
 
   <select
-    value={role}
-    onChange={(e) => setRole(e.target.value)}
-  >
-    <option value="Employee">
-      Employee
-    </option>
-
-    <option value="Technician">
-      Technician
-    </option>
-
-    <option value="IT Manager">
-      IT Manager
-    </option>
-
-    <option value="System Admin">
-      System Admin
-    </option>
-  </select>
-
+  value={role}
+  onChange={(e) => setRole(e.target.value)}
+>
+  <option value="Employee">Employee</option>
+  <option value="Technician">Technician</option>
+  <option value="IT Manager">IT Manager</option>
+  <option value="System Admin">System Admin</option>
+</select>
   <small className="role-info">
-    Select the account type for this user.
-  </small>
+  System Admin accounts should be created securely by an existing administrator.
+</small>
 </div>
           {/* Error */}
           {error && (

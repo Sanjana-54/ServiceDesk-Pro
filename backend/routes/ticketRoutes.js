@@ -17,7 +17,7 @@ router.post(
       const {
         title,
         description,
-        category: requestedCategory,
+        category,
         priority,
       } = req.body;
 
@@ -27,23 +27,11 @@ router.post(
         });
       }
 
-      const allowedCategories = [
-        "Hardware",
-        "Software",
-        "Network",
-        "Access",
-        "Other",
-      ];
-
-      const category = allowedCategories.includes(requestedCategory)
-        ? requestedCategory
-        : "Other";
-
       const ticket = await Ticket.create({
         title,
         description,
-        category,
-        priority,
+        category: category || "Other",
+        priority: priority || "Medium",
         createdBy: req.user.userId,
       });
 
@@ -51,6 +39,7 @@ router.post(
         message: "Ticket created successfully",
         ticket,
       });
+
     } catch (error) {
       console.error("Create ticket error:", error);
 
@@ -60,7 +49,6 @@ router.post(
     }
   }
 );
-
 // GET MY TICKETS
 router.get(
   "/my-tickets",
