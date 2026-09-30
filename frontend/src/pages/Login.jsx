@@ -22,21 +22,15 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await api.post(
-        "/auth/login",
-        {
-          email: email.trim(),
-          password,
-        }
-      );
+      const response = await api.post("/auth/login", {
+        email: email.trim(),
+        password,
+      });
 
       const { token, user } = response.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
+      localStorage.setItem("user", JSON.stringify(user));
 
       if (user.role === "System Admin") {
         navigate("/admin");
@@ -65,6 +59,7 @@ function Login() {
         {/* Brand */}
 
         <div className="login-brand">
+
           <div className="brand-icon">
             SD
           </div>
@@ -73,16 +68,19 @@ function Login() {
             <h1>ServiceDesk Pro</h1>
             <p>IT Service Management</p>
           </div>
+
         </div>
 
         {/* Heading */}
 
         <div className="login-heading">
-          <h2>Welcome back 👋</h2>
+
+          <h2>Welcome back</h2>
 
           <p>
             Sign in to manage your support workspace
           </p>
+
         </div>
 
         {/* Form */}
@@ -101,10 +99,6 @@ function Login() {
             </label>
 
             <div className="input-wrapper">
-
-              <span className="input-icon">
-                ✉
-              </span>
 
               <input
                 id="email"
@@ -137,10 +131,6 @@ function Login() {
 
             <div className="input-wrapper">
 
-              <span className="input-icon">
-                🔒
-              </span>
-
               <input
                 id="password"
                 type={
@@ -162,14 +152,10 @@ function Login() {
                 type="button"
                 className="password-toggle"
                 onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
+                  setShowPassword(!showPassword)
                 }
               >
-                {showPassword
-                  ? "Hide"
-                  : "Show"}
+                {showPassword ? "Hide" : "Show"}
               </button>
 
             </div>
@@ -180,19 +166,18 @@ function Login() {
 
           {error && (
             <div className="login-error">
-              <span>⚠</span>
-
               <p>{error}</p>
             </div>
           )}
 
-          {/* Login */}
+          {/* Login Button */}
 
           <button
             className="login-button"
             type="submit"
             disabled={loading}
           >
+
             {loading ? (
               <>
                 <span className="spinner"></span>
@@ -201,6 +186,7 @@ function Login() {
             ) : (
               "Sign In"
             )}
+
           </button>
 
         </form>
@@ -227,7 +213,7 @@ function Login() {
         {/* Security */}
 
         <div className="login-security">
-          🔒 Secure access to your ServiceDesk workspace
+          Secure access to your ServiceDesk workspace
         </div>
 
       </div>
