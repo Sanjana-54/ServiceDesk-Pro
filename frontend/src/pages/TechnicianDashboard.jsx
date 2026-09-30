@@ -12,14 +12,17 @@ function TechnicianDashboard() {
 
   const [tickets, setTickets] = useState([]);
 
-  // Fetch tickets assigned to technician
+  // ================================
+  // FETCH ASSIGNED TICKETS
+  // ================================
+
   const fetchTickets = async () => {
     try {
       const response = await api.get("/tickets/assigned");
 
-      setTickets(response.data.tickets);
+      setTickets(response.data.tickets || []);
     } catch (error) {
-      console.error(error);
+      console.error("Fetch tickets error:", error);
 
       alert(
         error.response?.data?.message ||
@@ -32,7 +35,10 @@ function TechnicianDashboard() {
     fetchTickets();
   }, []);
 
-  // Update ticket status
+  // ================================
+  // UPDATE TICKET STATUS
+  // ================================
+
   const updateStatus = async (ticketId, status) => {
     try {
       await api.patch(
@@ -40,8 +46,10 @@ function TechnicianDashboard() {
         { status }
       );
 
-      fetchTickets();
+      await fetchTickets();
     } catch (error) {
+      console.error("Update status error:", error);
+
       alert(
         error.response?.data?.message ||
           "Unable to update ticket"
@@ -49,13 +57,25 @@ function TechnicianDashboard() {
     }
   };
 
-  // Logout
+  // ================================
+  // LOGOUT
+  // ================================
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Ticket statistics
+  // ================================
+  // TICKET STATISTICS
+  // ================================
+
+  const pendingCount = tickets.filter(
+    (ticket) =>
+      ticket.status === "Assigned" ||
+      ticket.status === "Open"
+  ).length;
+
   const inProgressCount = tickets.filter(
     (ticket) =>
       ticket.status === "In Progress"
@@ -66,28 +86,27 @@ function TechnicianDashboard() {
       ticket.status === "Resolved"
   ).length;
 
-  const pendingCount = tickets.filter(
-    (ticket) =>
-      ticket.status === "Assigned" ||
-      ticket.status === "Open"
-  ).length;
-
   return (
     <div className="tech-page">
 
-      {/* ================= HEADER ================= */}
+      {/* ================================
+          HEADER
+      ================================= */}
 
       <header className="tech-header">
 
-        <div>
+        <div className="tech-brand">
+
           <h1>ServiceDesk Pro</h1>
+
           <p>Technician Dashboard</p>
+
         </div>
 
         <div className="tech-user">
 
           <span>
-            Welcome, {user?.name}
+            Welcome, {user?.name || "Technician"}
           </span>
 
           <button
@@ -101,11 +120,13 @@ function TechnicianDashboard() {
 
       </header>
 
-      {/* ================= MAIN CONTENT ================= */}
+      {/* ================================
+          MAIN CONTENT
+      ================================= */}
 
       <main className="tech-container">
 
-        {/* Page Title */}
+        {/* PAGE TITLE */}
 
         <div className="page-title">
 
@@ -120,11 +141,13 @@ function TechnicianDashboard() {
 
         </div>
 
-        {/* ================= STATISTICS ================= */}
+        {/* ================================
+            STATISTICS
+        ================================= */}
 
         <div className="tech-stats">
 
-          {/* Pending */}
+          {/* PENDING */}
 
           <div className="tech-stat-card">
 
@@ -142,7 +165,7 @@ function TechnicianDashboard() {
 
           </div>
 
-          {/* In Progress */}
+          {/* IN PROGRESS */}
 
           <div className="tech-stat-card">
 
@@ -160,7 +183,7 @@ function TechnicianDashboard() {
 
           </div>
 
-          {/* Resolved */}
+          {/* RESOLVED */}
 
           <div className="tech-stat-card">
 
@@ -180,7 +203,9 @@ function TechnicianDashboard() {
 
         </div>
 
-        {/* ================= TICKETS ================= */}
+        {/* ================================
+            TICKETS
+        ================================= */}
 
         {tickets.length === 0 ? (
 
@@ -208,7 +233,7 @@ function TechnicianDashboard() {
                 key={ticket._id}
               >
 
-                {/* Ticket Header */}
+                {/* TICKET HEADER */}
 
                 <div className="ticket-card-header">
 
@@ -219,7 +244,7 @@ function TechnicianDashboard() {
                     </h3>
 
                     <span className="ticket-category">
-                      {ticket.category}
+                      {ticket.category || "Other"}
                     </span>
 
                   </div>
@@ -228,62 +253,75 @@ function TechnicianDashboard() {
                     className={`priority ${
                       ticket.priority
                         ?.toLowerCase()
-                        .replace(" ", "-")
+                        .replace(/\s+/g, "-") ||
+                      "medium"
                     }`}
                   >
-                    {ticket.priority}
+                    {ticket.priority || "Medium"}
                   </span>
 
                 </div>
 
-                {/* Description */}
+                {/* DESCRIPTION */}
 
                 <p className="ticket-description">
                   {ticket.description}
                 </p>
 
-                {/* Ticket Information */}
+                {/* TICKET INFORMATION */}
 
                 <div className="ticket-info">
 
                   <p>
+
                     <strong>
                       Created By:
-                    </strong>{" "}
-                    {ticket.createdBy?.name ||
-                      "Unknown"}
+                    </strong>
+
+                    <span>
+                      {ticket.createdBy?.name ||
+                        "Unknown"}
+                    </span>
+
                   </p>
 
                   <p>
+
                     <strong>
                       Email:
-                    </strong>{" "}
-                    {ticket.createdBy?.email ||
-                      "N/A"}
+                    </strong>
+
+                    <span>
+                      {ticket.createdBy?.email ||
+                        "N/A"}
+                    </span>
+
                   </p>
 
                   <p>
+
                     <strong>
                       Status:
-                    </strong>{" "}
+                    </strong>
 
                     <span className="status-badge">
-                      {ticket.status}
+                      {ticket.status || "Open"}
                     </span>
 
                   </p>
 
                 </div>
 
-                {/* Status Update */}
+                {/* STATUS UPDATE */}
 
                 <div className="ticket-actions">
 
-                  <label>
+                  <label htmlFor={`status-${ticket._id}`}>
                     Update Status
                   </label>
 
                   <select
+                    id={`status-${ticket._id}`}
                     value={ticket.status}
                     onChange={(e) =>
                       updateStatus(
@@ -291,11 +329,16 @@ function TechnicianDashboard() {
                         e.target.value
                       )
                     }
+                    disabled={
+                      ticket.status === "Resolved"
+                    }
                   >
 
-                    <option value="Assigned">
-                      Assigned
-                    </option>
+                    {ticket.status === "Assigned" && (
+                      <option value="Assigned">
+                        Assigned
+                      </option>
+                    )}
 
                     <option value="In Progress">
                       In Progress
