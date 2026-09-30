@@ -15,11 +15,20 @@ router.post(
   async (req, res) => {
     try {
       const {
-        title,
-        description,
-        category,
-        priority,
-      } = req.body;
+  title,
+  description,
+  priority,
+} = req.body;
+
+const category = [
+  "Hardware",
+  "Software",
+  "Network",
+  "Access",
+  "Other",
+].includes(req.body.category)
+  ? req.body.category
+  : "Other";
 
       if (!title || !description) {
         return res.status(400).json({
