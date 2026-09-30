@@ -414,7 +414,7 @@ function EmployeeDashboard() {
                             ticket.priority
                           )}`}
                         >
-                          {ticket.priority || "Normal"}
+                          {ticket.priority || "Medium"}
                         </span>
                       </span>
 
