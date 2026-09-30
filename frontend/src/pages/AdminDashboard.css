@@ -1,36 +1,52 @@
+/* =========================
+   ADMIN PAGE
+========================= */
+
 .admin-page {
   min-height: 100vh;
-  background: #f5f7fb;
-  color: #1f2937;
+  background: #f6f7fb;
+  color: #172033;
 }
 
-/* HEADER */
+
+/* =========================
+   HEADER
+========================= */
 
 .admin-header {
   background: #111827;
-  color: white;
+  color: #fff;
 
-  padding: 22px 50px;
+  min-height: 76px;
+  padding: 0 48px;
 
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #1f2937;
 }
 
 .admin-header h1 {
   margin: 0;
-  font-size: 26px;
+  font-size: 23px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
 }
 
 .admin-header p {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
   color: #9ca3af;
+  font-size: 13px;
 }
 
 .admin-user {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
+
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .admin-logout {
@@ -39,331 +55,524 @@
   color: white;
 
   padding: 10px 18px;
-
-  border-radius: 8px;
+  border-radius: 9px;
 
   cursor: pointer;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+
+  transition: all 0.2s ease;
 }
 
 .admin-logout:hover {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
-/* MAIN */
+
+/* =========================
+   MAIN CONTAINER
+========================= */
 
 .admin-container {
-  max-width: 1250px;
-  margin: auto;
-  padding: 40px 30px;
+  max-width: 1320px;
+  margin: 0 auto;
+
+  padding: 42px 34px 60px;
 }
+
+
+/* =========================
+   PAGE TITLE
+========================= */
 
 .admin-title {
   margin-bottom: 30px;
 }
 
 .admin-title h2 {
-  margin: 0 0 8px;
+  margin: 0 0 7px;
+
   font-size: 30px;
+  line-height: 1.2;
+  font-weight: 750;
+
+  letter-spacing: -0.7px;
 }
 
 .admin-title p {
   margin: 0;
-  color: #6b7280;
+
+  color: #7b8495;
+  font-size: 14px;
 }
 
-/* STATS */
+
+/* =========================
+   STATISTICS
+========================= */
 
 .admin-stats {
   display: grid;
 
-  grid-template-columns:
-    repeat(5, 1fr);
+  grid-template-columns: repeat(5, 1fr);
 
-  gap: 18px;
+  gap: 16px;
 
-  margin-bottom: 40px;
+  margin-bottom: 38px;
 }
 
 .admin-stat-card {
-  background: white;
+  position: relative;
 
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  background: #fff;
 
-  padding: 22px;
+  border: 1px solid #e7eaf0;
+  border-radius: 15px;
+
+  padding: 21px 20px;
+
+  min-height: 125px;
+
+  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.035);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-stat-card::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+
+  width: 3px;
+
+  background: #4f46e5;
+
+  border-radius: 0 5px 5px 0;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-2px);
 
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.04);
+    0 8px 24px rgba(17, 24, 39, 0.07);
 }
 
 .admin-stat-card span {
-  font-size: 13px;
-  font-weight: 600;
-  color: #6b7280;
+  display: block;
+
+  color: #7b8495;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .admin-stat-card strong {
   display: block;
 
-  font-size: 30px;
+  margin: 8px 0 3px;
 
-  margin: 8px 0;
+  color: #172033;
+
+  font-size: 30px;
+  line-height: 1.1;
 }
 
 .admin-stat-card small {
-  color: #9ca3af;
+  color: #a0a7b4;
+
+  font-size: 12px;
 }
 
-/* TICKETS SECTION */
+
+/* =========================
+   TICKETS SECTION
+========================= */
 
 .tickets-section {
-  margin-top: 20px;
+  background: transparent;
 }
 
 .section-heading {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
 
-  margin-bottom: 22px;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+
+  padding: 0 2px;
 }
 
 .section-heading h2 {
-  margin: 0 0 6px;
+  margin: 0 0 5px;
+
+  font-size: 21px;
+  font-weight: 750;
+
+  letter-spacing: -0.3px;
 }
 
 .section-heading p {
   margin: 0;
-  color: #6b7280;
+
+  color: #8991a1;
+
+  font-size: 13px;
 }
 
 .ticket-count {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 78px;
+
+  padding: 8px 13px;
+
   background: #eef2ff;
   color: #4f46e5;
 
-  padding: 8px 14px;
+  border: 1px solid #e0e7ff;
 
-  border-radius: 20px;
+  border-radius: 999px;
 
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 750;
 }
 
-/* TICKET GRID */
+
+/* =========================
+   TICKET GRID
+========================= */
 
 .admin-ticket-grid {
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(350px, 1fr)
-    );
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 22px;
+  gap: 18px;
 }
 
-/* TICKET CARD */
+
+/* =========================
+   TICKET CARD
+========================= */
 
 .admin-ticket-card {
-  background: white;
+  background: #fff;
 
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e8ef;
 
-  border-radius: 14px;
+  border-radius: 16px;
 
-  padding: 24px;
+  padding: 21px;
 
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.04);
+    0 3px 12px rgba(17, 24, 39, 0.035);
 
-  transition: 0.2s;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .admin-ticket-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+
+  border-color: #d8dcf0;
 
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.08);
+    0 10px 28px rgba(17, 24, 39, 0.08);
 }
 
-/* HEADER */
+
+/* =========================
+   TICKET HEADER
+========================= */
 
 .admin-ticket-header {
   display: flex;
+
   justify-content: space-between;
   align-items: flex-start;
 
   gap: 15px;
+
+  margin-bottom: 13px;
 }
 
 .admin-ticket-header h3 {
   margin: 0 0 8px;
-  font-size: 20px;
+
+  color: #172033;
+
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 750;
 }
 
 .admin-category {
-  display: inline-block;
+  display: inline-flex;
 
-  background: #eef2ff;
-  color: #4f46e5;
+  align-items: center;
 
-  padding: 5px 10px;
+  background: #f0f2ff;
+  color: #5148d9;
+
+  padding: 5px 9px;
 
   border-radius: 6px;
 
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 750;
 }
 
-/* PRIORITY */
+
+/* =========================
+   PRIORITY
+========================= */
 
 .admin-priority {
-  padding: 6px 10px;
+  flex-shrink: 0;
 
-  border-radius: 20px;
+  padding: 5px 10px;
 
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  border: 1px solid transparent;
 }
 
 .admin-priority.low {
-  background: #dcfce7;
-  color: #166534;
+  background: #ecfdf3;
+  color: #15803d;
+  border-color: #d1fae5;
 }
 
 .admin-priority.medium {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff8df;
+  color: #a16207;
+  border-color: #fef3c7;
 }
 
 .admin-priority.high {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fff0f0;
+  color: #dc2626;
+  border-color: #fee2e2;
 }
 
 .admin-priority.critical {
   background: #7f1d1d;
-  color: white;
+  color: #fff;
+  border-color: #7f1d1d;
 }
 
-/* DESCRIPTION */
+
+/* =========================
+   DESCRIPTION
+========================= */
 
 .admin-description {
-  color: #6b7280;
+  color: #697386;
 
+  font-size: 13px;
   line-height: 1.6;
 
-  margin: 20px 0;
+  margin: 15px 0 18px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
 }
 
-/* INFO */
+
+/* =========================
+   TICKET INFORMATION
+========================= */
 
 .admin-ticket-info {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #edf0f4;
 
-  padding-top: 16px;
+  padding-top: 15px;
 
   display: grid;
 
-  gap: 12px;
+  gap: 9px;
 }
 
 .admin-ticket-info div {
   display: flex;
+
   justify-content: space-between;
+  align-items: center;
+
   gap: 15px;
 }
 
 .admin-ticket-info span {
-  color: #6b7280;
-  font-size: 13px;
+  color: #8a93a3;
+
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .admin-ticket-info strong {
-  font-size: 13px;
+  color: #273044;
+
+  font-size: 12px;
+  font-weight: 700;
+
   text-align: right;
 }
 
-/* ASSIGNMENT */
+
+/* =========================
+   ASSIGNMENT
+========================= */
 
 .assignment-section {
-  margin-top: 20px;
+  margin-top: 17px;
 
-  padding-top: 18px;
+  padding-top: 16px;
 
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #edf0f4;
 }
 
 .assignment-section label {
   display: block;
 
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 
-  font-size: 13px;
-  font-weight: 600;
+  color: #667085;
 
-  color: #6b7280;
+  font-size: 11px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .assignment-section select {
   width: 100%;
 
-  padding: 11px;
+  padding: 10px 12px;
 
-  border: 1px solid #d1d5db;
+  border: 1px solid #d9dee8;
 
-  border-radius: 8px;
+  border-radius: 9px;
 
-  background: white;
+  background: #fafbfc;
 
-  font-size: 14px;
+  color: #344054;
+
+  font-size: 13px;
+  font-weight: 500;
 
   cursor: pointer;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-/* EMPTY */
+.assignment-section select:hover {
+  background: #fff;
+
+  border-color: #bfc6d4;
+}
+
+.assignment-section select:focus {
+  background: #fff;
+
+  border-color: #6366f1;
+
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+
+/* =========================
+   EMPTY STATE
+========================= */
 
 .admin-empty {
-  background: white;
+  background: #fff;
 
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e8ef;
 
-  border-radius: 14px;
+  border-radius: 16px;
 
-  padding: 60px 20px;
+  padding: 65px 20px;
 
   text-align: center;
+
+  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.035);
 }
 
 .admin-empty h3 {
-  margin-bottom: 8px;
+  margin: 0 0 8px;
+
+  font-size: 18px;
 }
 
 .admin-empty p {
-  color: #6b7280;
+  margin: 0;
+
+  color: #7b8495;
+
+  font-size: 13px;
 }
 
-/* RESPONSIVE */
 
-@media (max-width: 1000px) {
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 1100px) {
+
   .admin-stats {
-    grid-template-columns:
-      repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-ticket-grid {
+    grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 700px) {
 
   .admin-header {
-    padding: 20px;
+    min-height: auto;
+
+    padding: 18px 20px;
 
     flex-direction: column;
 
     align-items: flex-start;
 
-    gap: 20px;
+    gap: 15px;
   }
 
   .admin-user {
@@ -373,11 +582,21 @@
   }
 
   .admin-container {
-    padding: 25px 15px;
+    padding: 28px 15px 45px;
+  }
+
+  .admin-title h2 {
+    font-size: 25px;
   }
 
   .admin-stats {
     grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .admin-stat-card {
+    min-height: auto;
   }
 
   .section-heading {
@@ -385,6 +604,24 @@
 
     align-items: flex-start;
 
-    gap: 15px;
+    gap: 12px;
+  }
+
+  .admin-ticket-grid {
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .admin-ticket-card {
+    padding: 18px;
+  }
+
+  .admin-ticket-header {
+    flex-direction: column;
+  }
+
+  .admin-priority {
+    align-self: flex-start;
   }
 }

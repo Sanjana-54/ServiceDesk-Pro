@@ -15,26 +15,29 @@ router.post(
   async (req, res) => {
     try {
       const {
-  title,
-  description,
-  priority,
-} = req.body;
-
-const category = [
-  "Hardware",
-  "Software",
-  "Network",
-  "Access",
-  "Other",
-].includes(req.body.category)
-  ? req.body.category
-  : "Other";
+        title,
+        description,
+        category: requestedCategory,
+        priority,
+      } = req.body;
 
       if (!title || !description) {
         return res.status(400).json({
           message: "Title and description are required",
         });
       }
+
+      const allowedCategories = [
+        "Hardware",
+        "Software",
+        "Network",
+        "Access",
+        "Other",
+      ];
+
+      const category = allowedCategories.includes(requestedCategory)
+        ? requestedCategory
+        : "Other";
 
       const ticket = await Ticket.create({
         title,
