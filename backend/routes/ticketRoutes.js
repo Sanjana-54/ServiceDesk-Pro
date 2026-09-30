@@ -30,8 +30,8 @@ router.post(
       const ticket = await Ticket.create({
         title,
         description,
-        category: category || "Other",
-        priority: priority || "Medium",
+        category: category,
+        priority: priority,
         createdBy: req.user.userId,
       });
 
