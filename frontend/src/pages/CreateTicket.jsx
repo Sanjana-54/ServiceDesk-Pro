@@ -9,7 +9,7 @@ function CreateTicket() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
-  const [category, setCategory] = useState("General");
+const [category, setCategory] = useState("Other");
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e) => {
@@ -39,8 +39,7 @@ function CreateTicket() {
   };
 
   return (
-  <div className="create-ticke
-  t-page">
+  <div className="create-ticket-page">
 
     <div className="create-ticket-header">
       <h1>Create Support Ticket</h1>
@@ -81,7 +80,7 @@ function CreateTicket() {
             <option value="Hardware">Hardware</option>
             <option value="Software">Software</option>
             <option value="Network">Network</option>
-            <option value="Account">Access</option>
+            <option value="Access">Access</option>
             <option value="Other">Other</option>
           </select>
         </div>
