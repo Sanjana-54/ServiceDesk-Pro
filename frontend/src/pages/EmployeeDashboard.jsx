@@ -402,7 +402,7 @@ function EmployeeDashboard() {
                         <strong>
                           Category:
                         </strong>{" "}
-                        {ticket.category || "General"}
+                        {ticket.category || "Other"}
                       </span>
 
                       <span>
