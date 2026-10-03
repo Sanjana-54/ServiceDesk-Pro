@@ -4,519 +4,557 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { getUser, logout } from "../services/auth";
 
-import {
-  pageBackground,
-  contentWrapper,
-  card,
-  pageTitle,
-  bodyText,
-  primaryButton,
-  secondaryButton,
-} from "../styles/common";
-
 function AdminDashboard() {
   const navigate = useNavigate();
   const user = getUser();
 
   const [stats, setStats] = useState({
+    totalUsers: 0,
     totalTickets: 0,
     openTickets: 0,
-    inProgressTickets: 0,
     resolvedTickets: 0,
+    technicians: 0,
   });
 
-  const [tickets, setTickets] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
-
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [assigning, setAssigning] = useState("");
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [updatingUser, setUpdatingUser] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
 
-  // ================================
-  // Fetch Dashboard Data
-  // ================================
-
-  const fetchDashboard = async () => {
+  const loadDashboard = async () => {
     try {
       setLoading(true);
+      setError("");
 
-      const [
-        dashboardResponse,
-        ticketsResponse,
-        techniciansResponse,
-      ] = await Promise.all([
-        api.get("/dashboard/admin"),
-        api.get("/tickets"),
-        api.get("/users/technicians"),
-      ]);
+      const response = await api.get("/dashboard/admin");
 
-      // Dashboard statistics
-      const dashboardData =
-        dashboardResponse.data?.dashboard ||
-        dashboardResponse.data ||
-        {};
-
-      setStats({
-        totalTickets:
-          dashboardData.totalTickets ||
-          dashboardData.total ||
-          0,
-
-        openTickets:
-          dashboardData.openTickets ||
-          dashboardData.open ||
-          0,
-
-        inProgressTickets:
-          dashboardData.inProgressTickets ||
-          dashboardData.inProgress ||
-          0,
-
-        resolvedTickets:
-          dashboardData.resolvedTickets ||
-          dashboardData.resolved ||
-          0,
-      });
-
-      // Tickets
-      setTickets(
-        ticketsResponse.data?.tickets ||
-          ticketsResponse.data ||
-          []
+      setStats(
+        response.data.stats || {
+          totalUsers: 0,
+          totalTickets: 0,
+          openTickets: 0,
+          resolvedTickets: 0,
+          technicians: 0,
+        }
       );
+    } catch (err) {
+      console.error("Dashboard error:", err);
 
-      // Technicians
-      setTechnicians(
-        techniciansResponse.data?.technicians ||
-          techniciansResponse.data ||
-          []
-      );
-    } catch (error) {
-      console.error("Dashboard error:", error);
-
-      alert(
-        error.response?.data?.message ||
-          "Unable to load admin dashboard."
+      setError(
+        err.response?.data?.message ||
+          "Unable to load dashboard."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
 
-  // ================================
-  // Logout
-  // ================================
+      const response = await api.get("/users");
+
+      setUsers(response.data.users || []);
+    } catch (err) {
+      console.error("Users error:", err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load users."
+      );
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const loadAllData = async () => {
+    await Promise.all([
+      loadDashboard(),
+      loadUsers(),
+    ]);
+  };
+
+  useEffect(() => {
+    loadAllData();
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // ================================
-  // Assign Ticket
-  // ================================
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      setUpdatingUser(userId);
 
-  const handleAssign = async (
-    ticketId,
-    technicianId
-  ) => {
-    if (!technicianId) {
+      const response = await api.patch(
+        `/users/${userId}/role`,
+        {
+          role: newRole,
+        }
+      );
+
+      setUsers((previousUsers) =>
+        previousUsers.map((item) =>
+          item._id === userId
+            ? {
+                ...item,
+                role: response.data.user.role,
+              }
+            : item
+        )
+      );
+
+      await loadDashboard();
+    } catch (err) {
+      console.error("Role update error:", err);
+
+      alert(
+        err.response?.data?.message ||
+          "Unable to update user role."
+      );
+    } finally {
+      setUpdatingUser(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${userName}?`
+    );
+
+    if (!confirmed) {
       return;
     }
 
     try {
-      setAssigning(ticketId);
+      setDeletingUser(userId);
 
-      await api.patch(
-        `/tickets/${ticketId}/assign`,
-        {
-          technicianId,
-        }
+      await api.delete(`/users/${userId}`);
+
+      setUsers((previousUsers) =>
+        previousUsers.filter(
+          (item) => item._id !== userId
+        )
       );
 
-      alert("Ticket assigned successfully.");
-
-      await fetchDashboard();
-    } catch (error) {
-      console.error("Assignment error:", error);
+      await loadDashboard();
+    } catch (err) {
+      console.error("Delete user error:", err);
 
       alert(
-        error.response?.data?.message ||
-          "Unable to assign ticket."
+        err.response?.data?.message ||
+          "Unable to delete user."
       );
     } finally {
-      setAssigning("");
+      setDeletingUser(null);
     }
   };
 
-  // ================================
-  // Status Classes
-  // ================================
+  const filteredUsers = users.filter((item) => {
+    const searchText = search.toLowerCase().trim();
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "Open":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-
-      case "Assigned":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-
-      case "In Progress":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-
-      case "Resolved":
-        return "bg-green-50 text-green-700 border-green-200";
-
-      case "Closed":
-        return "bg-gray-100 text-gray-700 border-gray-200";
-
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
+    if (!searchText) {
+      return true;
     }
-  };
 
-  // ================================
-  // Priority Classes
-  // ================================
-
-  const getPriorityClass = (priority) => {
-    switch (priority?.toLowerCase()) {
-      case "critical":
-        return "bg-red-50 text-red-700 border-red-200";
-
-      case "high":
-        return "bg-orange-50 text-orange-700 border-orange-200";
-
-      case "medium":
-        return "bg-yellow-50 text-yellow-700 border-yellow-200";
-
-      case "low":
-        return "bg-green-50 text-green-700 border-green-200";
-
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
-
-  // ================================
-  // Loading
-  // ================================
-
-  if (loading) {
     return (
-      <div
-        className={`${pageBackground} flex min-h-screen items-center justify-center`}
-      >
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-[#e5e7eb] border-t-[#4f46e5]" />
-
-          <p className={bodyText}>
-            Loading admin dashboard...
-          </p>
-        </div>
-      </div>
+      item.name?.toLowerCase().includes(searchText) ||
+      item.email?.toLowerCase().includes(searchText) ||
+      item.role?.toLowerCase().includes(searchText)
     );
-  }
+  });
 
-  // ================================
-  // Main UI
-  // ================================
+  const getInitial = (name) => {
+    return name
+      ? name.charAt(0).toUpperCase()
+      : "U";
+  };
+
+  const getRoleClass = (role) => {
+    switch (role) {
+      case "System Admin":
+        return "bg-purple-100 text-purple-700";
+
+      case "IT Manager":
+        return "bg-blue-100 text-blue-700";
+
+      case "Asset Manager":
+        return "bg-orange-100 text-orange-700";
+
+      case "Technician":
+        return "bg-green-100 text-green-700";
+
+      case "Employee":
+        return "bg-gray-100 text-gray-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   return (
-    <div className={pageBackground}>
-      <div className="min-h-screen">
+    <div className="min-h-screen bg-[#f5f7fb] text-[#172033]">
 
-        {/* ================================
-            Top Navigation
-        ================================= */}
+      {/* SIDEBAR */}
 
-        <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white/90 backdrop-blur-xl">
-          <div
-            className={`${contentWrapper} flex h-[72px] items-center justify-between`}
+      <aside className="fixed left-0 top-0 hidden h-screen w-[245px] flex-col bg-[#111827] text-white lg:flex">
+
+        {/* BRAND */}
+
+        <div className="flex items-center gap-3 border-b border-[#273244] px-5 py-6">
+
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#4f46e5] font-bold">
+            SD
+          </div>
+
+          <div>
+            <h2 className="text-[17px] font-semibold">
+              ServiceDesk
+            </h2>
+
+            <span className="text-xs text-gray-400">
+              Pro
+            </span>
+          </div>
+
+        </div>
+
+        {/* NAVIGATION */}
+
+        <nav className="flex flex-col gap-2 px-3.5 py-6">
+
+          <button
+            className="rounded-lg bg-[#1f2937] px-4 py-3 text-left text-sm font-medium text-white"
           >
+            <span className="mr-3">
+              ▦
+            </span>
+            Dashboard
+          </button>
 
-            {/* Brand */}
+          <button
+            onClick={loadAllData}
+            className="rounded-lg px-4 py-3 text-left text-sm text-gray-300 transition hover:bg-[#1f2937] hover:text-white"
+          >
+            <span className="mr-3">
+              ↻
+            </span>
+            Refresh
+          </button>
 
-            <div className="flex items-center gap-3">
-              <div
-                className="
-                  flex h-10 w-10 items-center justify-center
-                  rounded-xl
-                  bg-gradient-to-br from-[#4f46e5] to-[#6366f1]
-                  text-xs font-extrabold text-white
-                  shadow-[0_8px_18px_rgba(79,70,229,0.25)]
-                "
-              >
-                SD
-              </div>
+        </nav>
 
-              <div>
-                <h1 className="text-base font-bold tracking-tight text-[#111827]">
-                  ServiceDesk Pro
-                </h1>
+        {/* USER */}
 
-                <p className="text-[11px] text-[#9ca3af]">
-                  IT Service Management
-                </p>
-              </div>
+        <div className="mt-auto border-t border-[#273244] p-4">
+
+          <div className="mb-4 flex items-center gap-3">
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#4f46e5] font-semibold">
+              {getInitial(user?.name)}
             </div>
 
-            {/* User */}
+            <div className="min-w-0">
+              <strong className="block truncate text-sm">
+                {user?.name || "Admin"}
+              </strong>
 
-            <div className="flex items-center gap-4">
-
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-[#111827]">
-                  {user?.name || "Admin"}
-                </p>
-
-                <p className="text-xs text-[#9ca3af]">
-                  {user?.role || "System Admin"}
-                </p>
-              </div>
-
-              <div
-                className="
-                  flex h-10 w-10 items-center justify-center
-                  rounded-full
-                  bg-[#eef2ff]
-                  text-sm font-bold text-[#4f46e5]
-                "
-              >
-                {user?.name
-                  ? user.name
-                      .charAt(0)
-                      .toUpperCase()
-                  : "A"}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="
-                  rounded-lg
-                  border border-[#d1d5db]
-                  bg-white
-                  px-3 py-2
-                  text-sm font-medium
-                  text-[#374151]
-                  transition-colors
-                  hover:bg-[#f9fafb]
-                "
-              >
-                Logout
-              </button>
-
+              <span className="text-xs text-gray-400">
+                {user?.role || "System Admin"}
+              </span>
             </div>
 
           </div>
-        </header>
+
+          <button
+            onClick={handleLogout}
+            className="w-full rounded-lg bg-red-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </aside>
 
 
-        {/* ================================
-            Main Content
-        ================================= */}
+      {/* MAIN */}
 
-        <main
-          className={`${contentWrapper} px-4 py-8 sm:px-6 lg:px-8`}
-        >
+      <main className="min-h-screen lg:ml-[245px]">
 
-          {/* Heading */}
+        {/* HEADER */}
 
-          <div className="mb-8">
-            <h2 className={pageTitle}>
-              Admin Dashboard
-            </h2>
+        <header className="flex min-h-[72px] items-center justify-between border-b border-[#e5e7eb] bg-white px-5 sm:px-8">
 
-            <p className={`mt-2 ${bodyText}`}>
-              Manage support tickets, technicians,
-              and service requests.
+          <div>
+            <h1 className="text-lg font-bold text-[#111827]">
+              System Admin Dashboard
+            </h1>
+
+            <p className="mt-1 text-xs text-[#9ca3af]">
+              Manage users, roles and ServiceDesk operations
             </p>
           </div>
 
+          <div className="flex items-center gap-3">
 
-          {/* ================================
-              Statistics
-          ================================= */}
+            <div className="hidden text-right sm:block">
+              <strong className="block text-sm text-[#111827]">
+                {user?.name || "Admin"}
+              </strong>
 
-          <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <span className="text-xs text-[#9ca3af]">
+                System Admin
+              </span>
+            </div>
 
-            {/* Total */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#4f46e5] font-semibold text-white">
+              {getInitial(user?.name)}
+            </div>
 
-            <div
-              className={`${card} p-5`}
-            >
-              <div className="flex items-center justify-between">
+          </div>
 
-                <div>
-                  <p className="text-sm font-medium text-[#6b7280]">
-                    Total Tickets
-                  </p>
+        </header>
 
-                  <p className="mt-2 text-3xl font-bold text-[#111827]">
-                    {stats.totalTickets}
-                  </p>
-                </div>
 
-                <div
-                  className="
-                    flex h-11 w-11 items-center justify-center
-                    rounded-xl
-                    bg-[#eef2ff]
-                    text-lg text-[#4f46e5]
-                  "
-                >
-                  ▦
-                </div>
+        {/* CONTENT */}
 
+        <div className="p-5 sm:p-8">
+
+          {/* ERROR */}
+
+          {error && (
+            <div className="mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+
+              <span>
+                {error}
+              </span>
+
+              <button
+                onClick={() => {
+                  setError("");
+                  loadAllData();
+                }}
+                className="font-semibold underline"
+              >
+                Retry
+              </button>
+
+            </div>
+          )}
+
+
+          {/* WELCOME */}
+
+          <section className="mb-7 rounded-2xl bg-gradient-to-r from-[#4f46e5] to-[#6366f1] p-6 text-white shadow-lg sm:p-8">
+
+            <p className="text-sm font-medium text-indigo-100">
+              System Administration
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
+              Welcome back, {user?.name || "Admin"} 👋
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100">
+              Monitor ServiceDesk activity and manage users,
+              roles and access from one place.
+            </p>
+
+          </section>
+
+
+          {/* STATISTICS */}
+
+          <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+
+            {/* USERS */}
+
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-lg text-indigo-600">
+                ◉
               </div>
+
+              <span className="text-sm text-gray-500">
+                Total Users
+              </span>
+
+              <strong className="mt-1 block text-2xl font-bold text-gray-900">
+                {loading ? "—" : stats.totalUsers}
+              </strong>
+
             </div>
 
 
-            {/* Open */}
+            {/* TICKETS */}
 
-            <div
-              className={`${card} p-5`}
-            >
-              <div className="flex items-center justify-between">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
 
-                <div>
-                  <p className="text-sm font-medium text-[#6b7280]">
-                    Open Tickets
-                  </p>
-
-                  <p className="mt-2 text-3xl font-bold text-[#111827]">
-                    {stats.openTickets}
-                  </p>
-                </div>
-
-                <div
-                  className="
-                    flex h-11 w-11 items-center justify-center
-                    rounded-xl
-                    bg-blue-50
-                    text-lg text-blue-600
-                  "
-                >
-                  ◷
-                </div>
-
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-lg text-blue-600">
+                🎫
               </div>
+
+              <span className="text-sm text-gray-500">
+                Total Tickets
+              </span>
+
+              <strong className="mt-1 block text-2xl font-bold text-gray-900">
+                {loading ? "—" : stats.totalTickets}
+              </strong>
+
             </div>
 
 
-            {/* In Progress */}
+            {/* OPEN */}
 
-            <div
-              className={`${card} p-5`}
-            >
-              <div className="flex items-center justify-between">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
 
-                <div>
-                  <p className="text-sm font-medium text-[#6b7280]">
-                    In Progress
-                  </p>
-
-                  <p className="mt-2 text-3xl font-bold text-[#111827]">
-                    {stats.inProgressTickets}
-                  </p>
-                </div>
-
-                <div
-                  className="
-                    flex h-11 w-11 items-center justify-center
-                    rounded-xl
-                    bg-amber-50
-                    text-lg text-amber-600
-                  "
-                >
-                  ↻
-                </div>
-
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-50 text-lg text-yellow-600">
+                ◷
               </div>
+
+              <span className="text-sm text-gray-500">
+                Open Tickets
+              </span>
+
+              <strong className="mt-1 block text-2xl font-bold text-gray-900">
+                {loading ? "—" : stats.openTickets}
+              </strong>
+
             </div>
 
 
-            {/* Resolved */}
+            {/* RESOLVED */}
 
-            <div
-              className={`${card} p-5`}
-            >
-              <div className="flex items-center justify-between">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
 
-                <div>
-                  <p className="text-sm font-medium text-[#6b7280]">
-                    Resolved
-                  </p>
-
-                  <p className="mt-2 text-3xl font-bold text-[#111827]">
-                    {stats.resolvedTickets}
-                  </p>
-                </div>
-
-                <div
-                  className="
-                    flex h-11 w-11 items-center justify-center
-                    rounded-xl
-                    bg-green-50
-                    text-lg text-green-600
-                  "
-                >
-                  ✓
-                </div>
-
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-lg text-green-600">
+                ✓
               </div>
+
+              <span className="text-sm text-gray-500">
+                Resolved Tickets
+              </span>
+
+              <strong className="mt-1 block text-2xl font-bold text-gray-900">
+                {loading ? "—" : stats.resolvedTickets}
+              </strong>
+
+            </div>
+
+
+            {/* TECHNICIANS */}
+
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-lg text-purple-600">
+                👤
+              </div>
+
+              <span className="text-sm text-gray-500">
+                Technicians
+              </span>
+
+              <strong className="mt-1 block text-2xl font-bold text-gray-900">
+                {loading ? "—" : stats.technicians}
+              </strong>
+
             </div>
 
           </section>
 
 
-          {/* ================================
-              Tickets
-          ================================= */}
+          {/* USER MANAGEMENT */}
 
-          <section className={`${card} overflow-hidden`}>
+          <section className="rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
 
-            <div className="flex flex-col gap-3 border-b border-[#e5e7eb] p-5 sm:flex-row sm:items-center sm:justify-between">
+            {/* SECTION HEADER */}
+
+            <div className="flex flex-col gap-4 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
 
               <div>
-                <h3 className="text-lg font-bold text-[#111827]">
-                  All Support Tickets
-                </h3>
+                <h2 className="text-lg font-bold text-gray-900">
+                  User Management
+                </h2>
 
-                <p className={`mt-1 ${bodyText}`}>
-                  View and assign support requests.
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage user accounts and assign roles.
                 </p>
               </div>
 
               <button
-                type="button"
-                onClick={fetchDashboard}
-                className={secondaryButton}
+                onClick={loadUsers}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
               >
-                Refresh
+                ↻ Refresh Users
               </button>
 
             </div>
 
 
-            {tickets.length === 0 ? (
+            {/* SEARCH */}
 
-              <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="border-b border-gray-100 p-5">
 
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f3f4f6] text-2xl text-[#9ca3af]">
-                  ◫
+              <div className="relative max-w-md">
+
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  🔍
+                </span>
+
+                <input
+                  type="text"
+                  placeholder="Search by name, email or role..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                />
+
+              </div>
+
+            </div>
+
+
+            {/* USERS */}
+
+            {usersLoading ? (
+
+              <div className="flex min-h-[250px] items-center justify-center">
+
+                <div className="text-center">
+
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-indigo-600"></div>
+
+                  <p className="mt-3 text-sm text-gray-500">
+                    Loading users...
+                  </p>
+
                 </div>
 
-                <h3 className="text-base font-semibold text-[#111827]">
-                  No tickets found
+              </div>
+
+            ) : filteredUsers.length === 0 ? (
+
+              <div className="p-12 text-center">
+
+                <div className="text-4xl">
+                  👥
+                </div>
+
+                <h3 className="mt-4 font-semibold text-gray-900">
+                  No users found
                 </h3>
 
-                <p className={`mt-1 ${bodyText}`}>
-                  There are currently no support tickets.
+                <p className="mt-1 text-sm text-gray-500">
+                  Try changing your search.
                 </p>
 
               </div>
@@ -525,34 +563,30 @@ function AdminDashboard() {
 
               <div className="overflow-x-auto">
 
-                <table className="w-full min-w-[950px] text-left">
+                <table className="w-full min-w-[800px]">
 
-                  <thead className="bg-[#f9fafb]">
+                  <thead>
 
-                    <tr className="border-b border-[#e5e7eb]">
+                    <tr className="border-b border-gray-100 bg-gray-50/70">
 
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Ticket
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        User
                       </th>
 
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Employee
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Email
                       </th>
 
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Category
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Role
                       </th>
 
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Priority
+                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Created
                       </th>
 
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Status
-                      </th>
-
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                        Technician
+                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Action
                       </th>
 
                     </tr>
@@ -561,186 +595,160 @@ function AdminDashboard() {
 
                   <tbody>
 
-                    {tickets.map((ticket) => (
+                    {filteredUsers.map((item) => {
 
-                      <tr
-                        key={ticket._id}
-                        className="border-b border-[#f0f1f3] last:border-0 hover:bg-[#fafafa]"
-                      >
+                      const isCurrentUser =
+                        item._id === user?.id;
 
-                        {/* Ticket */}
+                      return (
+                        <tr
+                          key={item._id}
+                          className="border-b border-gray-100 last:border-0 hover:bg-gray-50/60"
+                        >
 
-                        <td className="px-5 py-5 align-top">
+                          {/* USER */}
 
-                          <div className="max-w-[260px]">
+                          <td className="px-5 py-4">
 
-                            <p className="font-semibold text-[#111827]">
-                              {ticket.title}
-                            </p>
+                            <div className="flex items-center gap-3">
 
-                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#6b7280]">
-                              {ticket.description}
-                            </p>
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
+                                {getInitial(item.name)}
+                              </div>
 
-                          </div>
+                              <div>
+                                <strong className="block text-sm text-gray-900">
+                                  {item.name}
+                                </strong>
 
-                        </td>
+                                {isCurrentUser && (
+                                  <span className="text-xs text-indigo-600">
+                                    You
+                                  </span>
+                                )}
+                              </div>
 
+                            </div>
 
-                        {/* Employee */}
-
-                        <td className="px-5 py-5 align-top">
-
-                          <p className="text-sm font-medium text-[#374151]">
-                            {ticket.createdBy?.name ||
-                              ticket.user?.name ||
-                              "Unknown"}
-                          </p>
-
-                          <p className="mt-1 text-xs text-[#9ca3af]">
-                            {ticket.createdBy?.email ||
-                              ticket.user?.email ||
-                              ""}
-                          </p>
-
-                        </td>
+                          </td>
 
 
-                        {/* Category */}
+                          {/* EMAIL */}
 
-                        <td className="px-5 py-5 align-top">
-
-                          <span className="text-sm text-[#374151]">
-                            {ticket.category ||
-                              "Other"}
-                          </span>
-
-                        </td>
+                          <td className="px-5 py-4 text-sm text-gray-600">
+                            {item.email}
+                          </td>
 
 
-                        {/* Priority */}
+                          {/* ROLE */}
 
-                        <td className="px-5 py-5 align-top">
+                          <td className="px-5 py-4">
 
-                          <span
-                            className={`
-                              inline-flex items-center
-                              rounded-full border
-                              px-2.5 py-1
-                              text-xs font-semibold
-                              ${getPriorityClass(
-                                ticket.priority
-                              )}
-                            `}
-                          >
-                            {ticket.priority ||
-                              "Medium"}
-                          </span>
+                            {isCurrentUser ? (
 
-                        </td>
-
-
-                        {/* Status */}
-
-                        <td className="px-5 py-5 align-top">
-
-                          <span
-                            className={`
-                              inline-flex items-center
-                              rounded-full border
-                              px-2.5 py-1
-                              text-xs font-semibold
-                              ${getStatusClass(
-                                ticket.status
-                              )}
-                            `}
-                          >
-                            {ticket.status ||
-                              "Open"}
-                          </span>
-
-                        </td>
-
-
-                        {/* Assignment */}
-
-                        <td className="px-5 py-5 align-top">
-
-                          <div className="flex min-w-[190px] flex-col gap-2">
-
-                            <p className="text-xs text-[#6b7280]">
-                              Currently:
-                              <span className="ml-1 font-semibold text-[#374151]">
-                                {ticket.assignedTo?.name ||
-                                  "Not assigned"}
+                              <span
+                                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleClass(
+                                  item.role
+                                )}`}
+                              >
+                                {item.role}
                               </span>
-                            </p>
 
-                            <select
-                              value={
-                                ticket.assignedTo?._id ||
-                                ""
-                              }
-                              disabled={
-                                assigning ===
-                                ticket._id
-                              }
-                              onChange={(e) =>
-                                handleAssign(
-                                  ticket._id,
-                                  e.target.value
-                                )
-                              }
-                              className="
-                                h-10 rounded-lg
-                                border border-[#d1d5db]
-                                bg-white px-3
-                                text-xs text-[#374151]
-                                outline-none
-                                transition
-                                focus:border-[#4f46e5]
-                                focus:ring-4
-                                focus:ring-[#4f46e5]/10
-                                disabled:cursor-not-allowed
-                                disabled:opacity-60
-                              "
-                            >
+                            ) : (
 
-                              <option value="">
-                                Assign technician
-                              </option>
+                              <select
+                                value={item.role}
+                                disabled={
+                                  updatingUser ===
+                                  item._id
+                                }
+                                onChange={(e) =>
+                                  handleRoleChange(
+                                    item._id,
+                                    e.target.value
+                                  )
+                                }
+                                className={`rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold outline-none focus:border-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 ${getRoleClass(
+                                  item.role
+                                )}`}
+                              >
 
-                              {technicians.map(
-                                (technician) => (
-                                  <option
-                                    key={
-                                      technician._id
-                                    }
-                                    value={
-                                      technician._id
-                                    }
-                                  >
-                                    {technician.name}
-                                  </option>
-                                )
-                              )}
+                                <option value="Employee">
+                                  Employee
+                                </option>
 
-                            </select>
+                                <option value="Technician">
+                                  Technician
+                                </option>
 
-                            {assigning ===
-                              ticket._id && (
-                              <span className="text-[11px] text-[#6b7280]">
-                                Assigning...
-                              </span>
+                                <option value="IT Manager">
+                                  IT Manager
+                                </option>
+
+                                <option value="Asset Manager">
+                                  Asset Manager
+                                </option>
+
+                                <option value="System Admin">
+                                  System Admin
+                                </option>
+
+                              </select>
+
                             )}
 
-                          </div>
+                          </td>
 
-                        </td>
 
-                      </tr>
+                          {/* CREATED */}
 
-                    ))}
+                          <td className="px-5 py-4 text-sm text-gray-500">
+                            {item.createdAt
+                              ? new Date(
+                                  item.createdAt
+                                ).toLocaleDateString()
+                              : "—"}
+                          </td>
+
+
+                          {/* DELETE */}
+
+                          <td className="px-5 py-4 text-right">
+
+                            {isCurrentUser ? (
+
+                              <span className="text-xs text-gray-400">
+                                Current account
+                              </span>
+
+                            ) : (
+
+                              <button
+                                disabled={
+                                  deletingUser ===
+                                  item._id
+                                }
+                                onClick={() =>
+                                  handleDeleteUser(
+                                    item._id,
+                                    item.name
+                                  )
+                                }
+                                className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {deletingUser ===
+                                item._id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+
+                            )}
+
+                          </td>
+
+                        </tr>
+                      );
+                    })}
 
                   </tbody>
 
@@ -752,9 +760,24 @@ function AdminDashboard() {
 
           </section>
 
-        </main>
 
-      </div>
+          {/* MOBILE LOGOUT */}
+
+          <div className="mt-6 lg:hidden">
+
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              Logout
+            </button>
+
+          </div>
+
+        </div>
+
+      </main>
+
     </div>
   );
 }
