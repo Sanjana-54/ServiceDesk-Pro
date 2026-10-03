@@ -1,151 +1,210 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import api from "../services/api";
-import "./Register.css";
+
+import {
+  pageBackground,
+  formCard,
+  brandContainer,
+  brandIcon,
+  brandTitle,
+  brandSubtitle,
+  heading,
+  bodyText,
+  form,
+  formGroup,
+  label,
+  inputWrapper,
+  inputWithIcon,
+  inputIcon,
+  input,
+  passwordToggle,
+  errorBox,
+  primaryButton,
+  dividerSection,
+  ghostButton,
+  securityText,
+  spinner,
+} from "../styles/common";
 
 function Register() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "Employee",
+  });
 
-  const [role, setRole] = useState("Employee");
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const getPasswordStrength = () => {
-    if (!password) return "";
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    if (password.length < 6) {
-      return "Weak";
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-    if (
-      password.length >= 8 &&
-      /[A-Z]/.test(password) &&
-      /[0-9]/.test(password) &&
-      /[^A-Za-z0-9]/.test(password)
-    ) {
-      return "Strong";
-    }
-
-    return "Medium";
+    setError("");
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    setMessage("");
     setError("");
-
-    if (name.trim().length < 3) {
-      setError("Name must contain at least 3 characters.");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must contain at least 6 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/register", {
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role,
-      });
+      await api.post("/auth/register", formData);
 
-      setMessage(
-        response.data.message || "Registration successful!"
-      );
+      alert("Account created successfully.");
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1200);
+      navigate("/");
     } catch (error) {
       setError(
         error.response?.data?.message ||
-          "Registration failed. Please try again."
+          "Unable to create account."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const strength = getPasswordStrength();
-
   return (
-    <div className="register-page">
+    <div
+      className={`${pageBackground} flex min-h-screen items-center justify-center p-4 sm:p-8`}
+    >
+      <div className={formCard}>
 
-      <div className="register-card">
+        {/* Brand */}
+        <div className={brandContainer}>
+          <div className={brandIcon}>
+            SD
+          </div>
 
-        <div className="register-header">
-          <div className="logo">SD</div>
+          <div>
+            <h1 className={brandTitle}>
+              ServiceDesk Pro
+            </h1>
 
-          <h1>ServiceDesk Pro</h1>
-
-          <p>Create your support account</p>
+            <p className={brandSubtitle}>
+              IT Service Management
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={handleRegister}>
+        {/* Heading */}
+        <div className="mb-7">
+          <h2 className={heading}>
+            Create your account
+          </h2>
+
+          <p className={`mt-2 ${bodyText}`}>
+            Register to access your support workspace
+          </p>
+        </div>
+
+        {/* Register Form */}
+        <form
+          className={form}
+          onSubmit={handleRegister}
+        >
 
           {/* Name */}
-          <div className="form-group">
-            <label>Full Name</label>
+          <div className={formGroup}>
+            <label
+              htmlFor="name"
+              className={label}
+            >
+              Full Name
+            </label>
 
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+            <div className={inputWrapper}>
+              <span className={inputIcon}>
+                •
+              </span>
+
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleChange}
+                className={inputWithIcon}
+                required
+                autoComplete="name"
+              />
+            </div>
           </div>
 
           {/* Email */}
-          <div className="form-group">
-            <label>Email Address</label>
+          <div className={formGroup}>
+            <label
+              htmlFor="email"
+              className={label}
+            >
+              Email Address
+            </label>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className={inputWrapper}>
+              <span className={inputIcon}>
+                @
+              </span>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                className={inputWithIcon}
+                required
+                autoComplete="email"
+              />
+            </div>
           </div>
 
           {/* Password */}
-          <div className="form-group">
-            <label>Password</label>
+          <div className={formGroup}>
+            <label
+              htmlFor="password"
+              className={label}
+            >
+              Password
+            </label>
 
-            <div className="password-box">
+            <div className={inputWrapper}>
+              <span className={inputIcon}>
+                •
+              </span>
+
               <input
-                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
                 placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
+                className={`${inputWithIcon} pr-[70px]`}
                 required
+                minLength={6}
+                autoComplete="new-password"
               />
 
               <button
                 type="button"
-                className="show-password"
+                className={passwordToggle}
                 onClick={() =>
                   setShowPassword(!showPassword)
                 }
@@ -153,107 +212,78 @@ function Register() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-
-            {password && (
-              <div
-                className={`password-strength ${strength.toLowerCase()}`}
-              >
-                Password strength: <strong>{strength}</strong>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="form-group">
-            <label>Confirm Password</label>
-
-            <div className="password-box">
-              <input
-                type={
-                  showConfirmPassword
-                    ? "text"
-                    : "password"
-                }
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
-                }
-                required
-              />
-
-              <button
-                type="button"
-                className="show-password"
-                onClick={() =>
-                  setShowConfirmPassword(
-                    !showConfirmPassword
-                  )
-                }
-              >
-                {showConfirmPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-
-            {confirmPassword &&
-              password !== confirmPassword && (
-                <small className="password-error">
-                  Passwords do not match
-                </small>
-              )}
           </div>
 
           {/* Role */}
-<div className="form-group">
-  <label>Account Type</label>
+          <div className={formGroup}>
+            <label
+              htmlFor="role"
+              className={label}
+            >
+              Account Type
+            </label>
 
-  <select
-  value={role}
-  onChange={(e) => setRole(e.target.value)}
->
-  <option value="Employee">Employee</option>
-  <option value="Technician">Technician</option>
-  <option value="IT Manager">IT Manager</option>
-  <option value="System Admin">System Admin</option>
-</select>
-  <small className="role-info">
-  System Admin accounts should be created securely by an existing administrator.
-</small>
-</div>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className={input}
+            >
+              <option value="Employee">
+                Employee
+              </option>
+
+              <option value="Technician">
+                Technician
+              </option>
+            </select>
+          </div>
+
           {/* Error */}
           {error && (
-            <div className="message error">
-              ❌ {error}
+            <div className={errorBox}>
+              <span>!</span>
+              <p>{error}</p>
             </div>
           )}
 
-          {/* Success */}
-          {message && (
-            <div className="message success">
-              ✅ {message}
-            </div>
-          )}
-
-          {/* Register */}
+          {/* Register Button */}
           <button
             type="submit"
-            className="register-button"
+            className={primaryButton}
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? (
+              <>
+                <span className={spinner}></span>
+                Creating account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
 
         </form>
 
-        <div className="login-section">
-          <span>Already have an account?</span>
+        {/* Login */}
+        <div className={dividerSection}>
+          <span>
+            Already have an account?
+          </span>
 
           <button
             type="button"
+            className={ghostButton}
             onClick={() => navigate("/")}
           >
-            Back to Login
+            Sign in
           </button>
+        </div>
+
+        {/* Security */}
+        <div className={securityText}>
+          Secure access to your ServiceDesk workspace
         </div>
 
       </div>
