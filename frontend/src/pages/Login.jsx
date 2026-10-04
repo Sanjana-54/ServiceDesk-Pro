@@ -56,14 +56,16 @@ function Login() {
 
       // Redirect according to role
       if (user.role === "System Admin") {
-        navigate("/admin");
-      } else if (user.role === "IT Manager") {
-        navigate("/admin");
-      } else if (user.role === "Technician") {
-        navigate("/technician");
-      } else {
-        navigate("/employee");
-      }
+  navigate("/admin");
+} else if (user.role === "IT Manager") {
+  navigate("/manager");
+} else if (user.role === "Asset Manager") {
+  navigate("/asset-manager");
+} else if (user.role === "Technician") {
+  navigate("/technician");
+} else {
+  navigate("/employee");
+}
     } catch (error) {
       setError(
         error.response?.data?.message ||

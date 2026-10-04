@@ -41,7 +41,6 @@ const ticketSchema = new mongoose.Schema(
       type: String,
       enum: [
         "Open",
-        "Assigned",
         "In Progress",
         "Resolved",
         "Closed",
@@ -66,6 +65,9 @@ const ticketSchema = new mongoose.Schema(
   }
 );
 
-const Ticket = mongoose.model("Ticket", ticketSchema);
+const Ticket = mongoose.model(
+  "Ticket",
+  ticketSchema
+);
 
 export default Ticket;

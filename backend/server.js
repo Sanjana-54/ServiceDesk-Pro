@@ -8,6 +8,15 @@ import authRoutes from "./routes/authRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import departmentRoutes from "./routes/departmentRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import slaRoutes from "./routes/slaRoutes.js";
+import assetRoutes from "./routes/assetRoutes.js";
+
+
+
+
+
 
 config();
 
@@ -31,6 +40,26 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use(
+  "/api/departments",
+  departmentRoutes
+);
+
+app.use(
+  "/api/categories",
+  categoryRoutes
+);
+
+app.use(
+  "/api/sla",
+  slaRoutes
+);
+
+app.use(
+  "/api/assets",
+  assetRoutes
+);
 
 app.get("/", (req, res) => {
   res.json({

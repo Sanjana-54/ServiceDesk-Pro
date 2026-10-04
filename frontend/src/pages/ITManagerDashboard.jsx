@@ -1,10 +1,8 @@
-// src/pages/AdminDashboard.jsx
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-function AdminDashboard() {
+function ITManagerDashboard() {
   const navigate = useNavigate();
 
   const [stats, setStats] = useState({
@@ -22,22 +20,15 @@ function AdminDashboard() {
     localStorage.getItem("user") || "{}"
   );
 
-  const loadDashboard = async () => {
+  const fetchDashboard = async () => {
     try {
       setLoading(true);
-      setError("");
 
-      const response = await api.get("/dashboard/admin");
+      const response = await api.get(
+        "/dashboard/admin"
+      );
 
-      setStats({
-        totalUsers: response.data.stats?.totalUsers || 0,
-        totalTickets: response.data.stats?.totalTickets || 0,
-        openTickets: response.data.stats?.openTickets || 0,
-        resolvedTickets:
-          response.data.stats?.resolvedTickets || 0,
-        technicians:
-          response.data.stats?.technicians || 0,
-      });
+      setStats(response.data.stats || {});
     } catch (error) {
       console.error(error);
 
@@ -51,7 +42,7 @@ function AdminDashboard() {
   };
 
   useEffect(() => {
-    loadDashboard();
+    fetchDashboard();
   }, []);
 
   const logout = () => {
@@ -61,11 +52,31 @@ function AdminDashboard() {
   };
 
   const cards = [
-    ["👥", "Total Users", stats.totalUsers],
-    ["🎫", "Total Tickets", stats.totalTickets],
-    ["📂", "Open Tickets", stats.openTickets],
-    ["✅", "Resolved Tickets", stats.resolvedTickets],
-    ["🧑‍💻", "Technicians", stats.technicians],
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: "👥",
+    },
+    {
+      title: "Total Tickets",
+      value: stats.totalTickets,
+      icon: "🎫",
+    },
+    {
+      title: "Open Tickets",
+      value: stats.openTickets,
+      icon: "📂",
+    },
+    {
+      title: "Resolved Tickets",
+      value: stats.resolvedTickets,
+      icon: "✅",
+    },
+    {
+      title: "Technicians",
+      value: stats.technicians,
+      icon: "🧑‍💻",
+    },
   ];
 
   return (
@@ -76,23 +87,23 @@ function AdminDashboard() {
 
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              System Admin Dashboard
+              IT Manager Dashboard
             </h1>
 
             <p className="text-sm text-gray-500">
-              Manage ServiceDesk Pro
+              Manage IT operations and support
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
 
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold">
-                {user.name || "System Admin"}
+                {user.name || "IT Manager"}
               </p>
 
               <p className="text-xs text-gray-500">
-                System Admin
+                {user.role || "IT Manager"}
               </p>
             </div>
 
@@ -104,8 +115,10 @@ function AdminDashboard() {
             </button>
 
           </div>
+
         </div>
       </header>
+
 
       <main className="mx-auto max-w-7xl px-6 py-8">
 
@@ -115,95 +128,118 @@ function AdminDashboard() {
           </div>
         )}
 
-        <h2 className="mb-1 text-xl font-bold">
-          System Overview
-        </h2>
+        <div className="mb-8">
 
-        <p className="mb-7 text-sm text-gray-500">
-          Monitor users, tickets and support operations.
-        </p>
+          <h2 className="text-xl font-bold text-gray-900">
+            Overview
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Monitor your IT support operations.
+          </p>
+
+        </div>
+
 
         {loading ? (
+
           <div className="rounded-xl bg-white p-10 text-center">
             Loading dashboard...
           </div>
+
         ) : (
+
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
 
-            {cards.map(([icon, title, value]) => (
+            {cards.map((card) => (
+
               <div
-                key={title}
+                key={card.title}
                 className="rounded-xl border bg-white p-5 shadow-sm"
               >
+
                 <div className="mb-4 text-3xl">
-                  {icon}
+                  {card.icon}
                 </div>
 
                 <p className="text-sm text-gray-500">
-                  {title}
+                  {card.title}
                 </p>
 
-                <p className="mt-1 text-3xl font-bold">
-                  {value}
-                </p>
+                <h3 className="mt-1 text-3xl font-bold text-gray-900">
+                  {card.value}
+                </h3>
+
               </div>
+
             ))}
 
           </div>
+
         )}
+
 
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
 
           <button
-            onClick={() => navigate("/admin/users")}
+            onClick={() =>
+              navigate("/technician-management")
+            }
             className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
           >
-            <div className="text-3xl">👥</div>
+            <div className="text-3xl">🧑‍💻</div>
 
-            <h3 className="mt-3 font-bold">
-              User Management
+            <h3 className="mt-3 font-bold text-gray-900">
+              Technician Management
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              Manage users and assign system roles.
+              View and manage technicians.
             </p>
           </button>
 
+
           <button
-            onClick={() => navigate("/admin/tickets")}
+            onClick={() =>
+              navigate("/ticket-management")
+            }
             className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
           >
             <div className="text-3xl">🎫</div>
 
-            <h3 className="mt-3 font-bold">
+            <h3 className="mt-3 font-bold text-gray-900">
               Ticket Management
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              View and manage all ServiceDesk tickets.
+              Monitor and assign support tickets.
             </p>
           </button>
 
+
           <button
-            onClick={() => navigate("/assets")}
+            onClick={() =>
+              navigate("/assets")
+            }
             className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
           >
             <div className="text-3xl">💻</div>
 
-            <h3 className="mt-3 font-bold">
+            <h3 className="mt-3 font-bold text-gray-900">
               Asset Management
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              Manage organizational assets.
+              View organizational assets.
             </p>
           </button>
 
         </div>
 
       </main>
+
     </div>
   );
 }
 
-export default AdminDashboard;
+export default ITManagerDashboard;
