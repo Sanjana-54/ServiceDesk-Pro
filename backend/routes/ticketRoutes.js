@@ -141,6 +141,46 @@ router.get(
 
 
 // ========================================
+// GET ASSIGNED TICKETS
+// TECHNICIAN
+// ========================================
+
+router.get(
+  "/assigned",
+  authMiddleware,
+  roleMiddleware("Technician"),
+  async (req, res) => {
+    try {
+      const tickets = await Ticket.find({
+        assignedTo: req.user.userId,
+      })
+        .populate(
+          "createdBy",
+          "name email role"
+        )
+        .populate(
+          "assignedTo",
+          "name email role"
+        )
+        .sort({ createdAt: -1 });
+
+      res.json({
+        tickets,
+      });
+    } catch (error) {
+      console.error(
+        "Fetch assigned tickets error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Server error while fetching assigned tickets",
+      });
+    }
+  }
+);
+// ========================================
 // GET ALL TICKETS FOR SYSTEM ADMIN
 // ========================================
 
