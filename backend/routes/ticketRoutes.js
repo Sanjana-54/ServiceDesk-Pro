@@ -177,7 +177,84 @@ router.get(
   }
 );
 
+// ========================================
+// ASSIGN TICKET TO TECHNICIAN
+// SYSTEM ADMIN + IT MANAGER
+// ========================================
 
+router.patch(
+  "/:id/assign",
+  authMiddleware,
+  roleMiddleware(
+    "System Admin",
+    "IT Manager"
+  ),
+  async (req, res) => {
+    try {
+      const { technicianId } = req.body;
+
+      if (!technicianId) {
+        return res.status(400).json({
+          message: "Technician is required",
+        });
+      }
+
+      const ticket = await Ticket.findById(
+        req.params.id
+      );
+
+      if (!ticket) {
+        return res.status(404).json({
+          message: "Ticket not found",
+        });
+      }
+
+      const technician = await User.findOne({
+        _id: technicianId,
+        role: "Technician",
+      });
+
+      if (!technician) {
+        return res.status(400).json({
+          message:
+            "Selected user is not a technician",
+        });
+      }
+
+      ticket.assignedTo = technician._id;
+
+      await ticket.save();
+
+      const updatedTicket =
+        await Ticket.findById(ticket._id)
+          .populate(
+            "createdBy",
+            "name email role"
+          )
+          .populate(
+            "assignedTo",
+            "name email role"
+          );
+
+      res.json({
+        message:
+          "Ticket assigned successfully",
+        ticket: updatedTicket,
+      });
+
+    } catch (error) {
+      console.error(
+        "Assign ticket error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Server error while assigning ticket",
+      });
+    }
+  }
+);
 // ========================================
 // UPDATE TICKET
 // SYSTEM ADMIN + IT MANAGER + TECHNICIAN
