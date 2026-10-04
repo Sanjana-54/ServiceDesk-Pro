@@ -40,7 +40,6 @@ router.post(
         category: category || "Other",
         createdBy: req.user.userId,
         status: "Open",
-        assignedTo: null,
       });
 
       res.status(201).json({
@@ -103,44 +102,6 @@ router.get(
 
 
 // ========================================
-// GET MY TICKETS
-// EMPLOYEE
-// ========================================
-
-router.get(
-  "/my-tickets",
-  authMiddleware,
-  roleMiddleware("Employee"),
-  async (req, res) => {
-    try {
-      const tickets = await Ticket.find({
-        createdBy: req.user.userId,
-      })
-        .populate(
-          "assignedTo",
-          "name email"
-        )
-        .sort({ createdAt: -1 });
-
-      res.json({
-        tickets,
-      });
-    } catch (error) {
-      console.error(
-        "Fetch my tickets error:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Server error while fetching tickets",
-      });
-    }
-  }
-);
-
-
-// ========================================
 // GET ASSIGNED TICKETS
 // TECHNICIAN
 // ========================================
@@ -180,8 +141,49 @@ router.get(
     }
   }
 );
+
+
 // ========================================
-// GET ALL TICKETS FOR SYSTEM ADMIN
+// GET MY TICKETS
+// EMPLOYEE
+// ========================================
+
+router.get(
+  "/my-tickets",
+  authMiddleware,
+  roleMiddleware("Employee"),
+  async (req, res) => {
+    try {
+      const tickets = await Ticket.find({
+        createdBy: req.user.userId,
+      })
+        .populate(
+          "assignedTo",
+          "name email"
+        )
+        .sort({ createdAt: -1 });
+
+      res.json({
+        tickets,
+      });
+    } catch (error) {
+      console.error(
+        "Fetch my tickets error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Server error while fetching tickets",
+      });
+    }
+  }
+);
+
+
+// ========================================
+// GET ADMIN TICKETS
+// SYSTEM ADMIN
 // ========================================
 
 router.get(
@@ -220,6 +222,83 @@ router.get(
 
 
 // ========================================
+// TECHNICIAN UPDATE STATUS
+// TECHNICIAN ONLY
+// ========================================
+
+router.patch(
+  "/:ticketId/status",
+  authMiddleware,
+  roleMiddleware("Technician"),
+  async (req, res) => {
+    try {
+      const { status } = req.body;
+
+      if (
+        !["In Progress", "Resolved"].includes(status)
+      ) {
+        return res.status(400).json({
+          message: "Invalid technician status",
+        });
+      }
+
+      const ticket = await Ticket.findById(
+        req.params.ticketId
+      );
+
+      if (!ticket) {
+        return res.status(404).json({
+          message: "Ticket not found",
+        });
+      }
+
+      if (
+        !ticket.assignedTo ||
+        ticket.assignedTo.toString() !==
+          req.user.userId
+      ) {
+        return res.status(403).json({
+          message:
+            "This ticket is not assigned to you",
+        });
+      }
+
+      ticket.status = status;
+
+      await ticket.save();
+
+      const updatedTicket =
+        await Ticket.findById(ticket._id)
+          .populate(
+            "createdBy",
+            "name email role"
+          )
+          .populate(
+            "assignedTo",
+            "name email role"
+          );
+
+      res.json({
+        message:
+          "Ticket status updated successfully",
+        ticket: updatedTicket,
+      });
+    } catch (error) {
+      console.error(
+        "Technician status update error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Server error while updating ticket status",
+      });
+    }
+  }
+);
+
+
+// ========================================
 // UPDATE TICKET
 // SYSTEM ADMIN + IT MANAGER + TECHNICIAN
 // ========================================
@@ -243,16 +322,14 @@ router.patch(
         description,
       } = req.body;
 
-      const ticket = await Ticket.findById(
-        req.params.id
-      );
+      const ticket =
+        await Ticket.findById(req.params.id);
 
       if (!ticket) {
         return res.status(404).json({
           message: "Ticket not found",
         });
       }
-
 
       // STATUS
       if (status !== undefined) {
@@ -263,7 +340,9 @@ router.patch(
           "Closed",
         ];
 
-        if (!allowedStatuses.includes(status)) {
+        if (
+          !allowedStatuses.includes(status)
+        ) {
           return res.status(400).json({
             message: "Invalid ticket status",
           });
@@ -272,17 +351,14 @@ router.patch(
         ticket.status = status;
       }
 
-
-      // ASSIGN TECHNICIAN
+      // ASSIGNED TECHNICIAN
       if (assignedTo !== undefined) {
-
         if (
           assignedTo === null ||
           assignedTo === ""
         ) {
           ticket.assignedTo = null;
         } else {
-
           const technician =
             await User.findOne({
               _id: assignedTo,
@@ -296,10 +372,10 @@ router.patch(
             });
           }
 
-          ticket.assignedTo = technician._id;
+          ticket.assignedTo =
+            technician._id;
         }
       }
-
 
       // PRIORITY
       if (priority !== undefined) {
@@ -314,13 +390,13 @@ router.patch(
           !allowedPriorities.includes(priority)
         ) {
           return res.status(400).json({
-            message: "Invalid ticket priority",
+            message:
+              "Invalid ticket priority",
           });
         }
 
         ticket.priority = priority;
       }
-
 
       // CATEGORY
       if (category !== undefined) {
@@ -336,25 +412,23 @@ router.patch(
           !allowedCategories.includes(category)
         ) {
           return res.status(400).json({
-            message: "Invalid ticket category",
+            message:
+              "Invalid ticket category",
           });
         }
 
         ticket.category = category;
       }
 
-
       // TITLE
       if (title !== undefined) {
         ticket.title = title;
       }
 
-
       // DESCRIPTION
       if (description !== undefined) {
         ticket.description = description;
       }
-
 
       await ticket.save();
 
@@ -374,7 +448,6 @@ router.patch(
           "Ticket updated successfully",
         ticket: updatedTicket,
       });
-
     } catch (error) {
       console.error(
         "Update ticket error:",
@@ -418,7 +491,6 @@ router.delete(
         message:
           "Ticket deleted successfully",
       });
-
     } catch (error) {
       console.error(
         "Delete ticket error:",
