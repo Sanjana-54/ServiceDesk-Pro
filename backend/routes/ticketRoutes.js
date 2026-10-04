@@ -29,8 +29,7 @@ router.post(
 
       if (!title || !description) {
         return res.status(400).json({
-          message:
-            "Title and description are required",
+          message: "Title and description are required",
         });
       }
 
@@ -41,6 +40,7 @@ router.post(
         category: category || "Other",
         createdBy: req.user.userId,
         status: "Open",
+        assignedTo: null,
       });
 
       res.status(201).json({
@@ -48,14 +48,10 @@ router.post(
         ticket,
       });
     } catch (error) {
-      console.error(
-        "Create ticket error:",
-        error
-      );
+      console.error("Create ticket error:", error);
 
       res.status(500).json({
-        message:
-          "Server error while creating ticket",
+        message: "Server error while creating ticket",
       });
     }
   }
@@ -144,8 +140,9 @@ router.get(
 );
 
 
-// backend/routes/ticketRoutes.js
-// ADD THIS ROUTE BEFORE ANY "/:id" ROUTES
+// ========================================
+// GET ALL TICKETS FOR SYSTEM ADMIN
+// ========================================
 
 router.get(
   "/admin",
@@ -156,6 +153,10 @@ router.get(
       const tickets = await Ticket.find()
         .populate(
           "createdBy",
+          "name email role"
+        )
+        .populate(
+          "assignedTo",
           "name email role"
         )
         .sort({ createdAt: -1 });
@@ -177,84 +178,7 @@ router.get(
   }
 );
 
-// ========================================
-// ASSIGN TICKET TO TECHNICIAN
-// SYSTEM ADMIN + IT MANAGER
-// ========================================
 
-router.patch(
-  "/:id/assign",
-  authMiddleware,
-  roleMiddleware(
-    "System Admin",
-    "IT Manager"
-  ),
-  async (req, res) => {
-    try {
-      const { technicianId } = req.body;
-
-      if (!technicianId) {
-        return res.status(400).json({
-          message: "Technician is required",
-        });
-      }
-
-      const ticket = await Ticket.findById(
-        req.params.id
-      );
-
-      if (!ticket) {
-        return res.status(404).json({
-          message: "Ticket not found",
-        });
-      }
-
-      const technician = await User.findOne({
-        _id: technicianId,
-        role: "Technician",
-      });
-
-      if (!technician) {
-        return res.status(400).json({
-          message:
-            "Selected user is not a technician",
-        });
-      }
-
-      ticket.assignedTo = technician._id;
-
-      await ticket.save();
-
-      const updatedTicket =
-        await Ticket.findById(ticket._id)
-          .populate(
-            "createdBy",
-            "name email role"
-          )
-          .populate(
-            "assignedTo",
-            "name email role"
-          );
-
-      res.json({
-        message:
-          "Ticket assigned successfully",
-        ticket: updatedTicket,
-      });
-
-    } catch (error) {
-      console.error(
-        "Assign ticket error:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Server error while assigning ticket",
-      });
-    }
-  }
-);
 // ========================================
 // UPDATE TICKET
 // SYSTEM ADMIN + IT MANAGER + TECHNICIAN
@@ -279,8 +203,9 @@ router.patch(
         description,
       } = req.body;
 
-      const ticket =
-        await Ticket.findById(req.params.id);
+      const ticket = await Ticket.findById(
+        req.params.id
+      );
 
       if (!ticket) {
         return res.status(404).json({
@@ -290,7 +215,6 @@ router.patch(
 
 
       // STATUS
-
       if (status !== undefined) {
         const allowedStatuses = [
           "Open",
@@ -309,8 +233,7 @@ router.patch(
       }
 
 
-      // ASSIGNED TECHNICIAN
-
+      // ASSIGN TECHNICIAN
       if (assignedTo !== undefined) {
 
         if (
@@ -333,16 +256,13 @@ router.patch(
             });
           }
 
-          ticket.assignedTo =
-            technician._id;
+          ticket.assignedTo = technician._id;
         }
       }
 
 
       // PRIORITY
-
       if (priority !== undefined) {
-
         const allowedPriorities = [
           "Low",
           "Medium",
@@ -363,9 +283,7 @@ router.patch(
 
 
       // CATEGORY
-
       if (category !== undefined) {
-
         const allowedCategories = [
           "Hardware",
           "Software",
@@ -387,17 +305,14 @@ router.patch(
 
 
       // TITLE
-
       if (title !== undefined) {
         ticket.title = title;
       }
 
 
       // DESCRIPTION
-
       if (description !== undefined) {
-        ticket.description =
-          description;
+        ticket.description = description;
       }
 
 

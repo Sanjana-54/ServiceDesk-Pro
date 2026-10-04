@@ -1,5 +1,3 @@
-// src/pages/AdminTickets.jsx
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -8,17 +6,29 @@ function AdminTickets() {
   const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadTickets = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await api.get("/tickets/admin");
+      const [ticketsResponse, techniciansResponse] =
+        await Promise.all([
+          api.get("/tickets/admin"),
+          api.get("/users/technicians"),
+        ]);
 
-      setTickets(response.data.tickets || []);
+      setTickets(
+        ticketsResponse.data.tickets || []
+      );
+
+      setTechnicians(
+        techniciansResponse.data.technicians || []
+      );
+
     } catch (error) {
       console.error(error);
 
@@ -31,17 +41,81 @@ function AdminTickets() {
     }
   };
 
+
   useEffect(() => {
-    loadTickets();
+    loadData();
   }, []);
 
-  const updateStatus = async (id, status) => {
-    try {
-     await api.patch(`/tickets/${id}`, {
-  status,
-});
 
-      loadTickets();
+  // ========================================
+  // ASSIGN TECHNICIAN
+  // ========================================
+
+  const assignTechnician = async (
+    ticketId,
+    technicianId
+  ) => {
+    try {
+      setError("");
+
+      const response = await api.patch(
+        `/tickets/${ticketId}`,
+        {
+          assignedTo: technicianId || null,
+        }
+      );
+
+      const updatedTicket =
+        response.data.ticket;
+
+      setTickets((currentTickets) =>
+        currentTickets.map((ticket) =>
+          ticket._id === ticketId
+            ? updatedTicket
+            : ticket
+        )
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to assign technician"
+      );
+    }
+  };
+
+
+  // ========================================
+  // UPDATE STATUS
+  // ========================================
+
+  const updateStatus = async (
+    ticketId,
+    status
+  ) => {
+    try {
+      setError("");
+
+      const response = await api.patch(
+        `/tickets/${ticketId}`,
+        {
+          status,
+        }
+      );
+
+      const updatedTicket =
+        response.data.ticket;
+
+      setTickets((currentTickets) =>
+        currentTickets.map((ticket) =>
+          ticket._id === ticketId
+            ? updatedTicket
+            : ticket
+        )
+      );
+
     } catch (error) {
       console.error(error);
 
@@ -52,10 +126,14 @@ function AdminTickets() {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-slate-50">
 
+      {/* HEADER */}
+
       <header className="border-b bg-white">
+
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
           <div>
@@ -70,13 +148,17 @@ function AdminTickets() {
 
           <button
             onClick={() => navigate("/admin")}
-            className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50"
+            className="rounded-lg border px-4 py-2 text-sm font-semibold hover:bg-gray-50"
           >
             ← Back to Dashboard
           </button>
 
         </div>
+
       </header>
+
+
+      {/* CONTENT */}
 
       <main className="mx-auto max-w-7xl px-6 py-8">
 
@@ -86,12 +168,13 @@ function AdminTickets() {
           </div>
         )}
 
+
         <div className="rounded-xl border bg-white shadow-sm">
 
           <div className="flex items-center justify-between border-b p-6">
 
             <div>
-              <h2 className="text-lg font-bold">
+              <h2 className="text-xl font-bold">
                 All Tickets
               </h2>
 
@@ -101,7 +184,7 @@ function AdminTickets() {
             </div>
 
             <button
-              onClick={loadTickets}
+              onClick={loadData}
               className="rounded-lg border px-4 py-2 text-sm font-semibold hover:bg-gray-50"
             >
               ↻ Refresh
@@ -109,94 +192,167 @@ function AdminTickets() {
 
           </div>
 
+
           {loading ? (
+
             <div className="p-10 text-center text-gray-500">
               Loading tickets...
             </div>
+
           ) : tickets.length === 0 ? (
+
             <div className="p-10 text-center text-gray-500">
               No tickets found.
             </div>
+
           ) : (
+
             <div className="overflow-x-auto">
 
-              <table className="w-full text-left">
+              <table className="w-full">
 
-                <thead className="border-b bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-sm font-semibold">
+                <thead>
+                  <tr className="border-b text-left text-sm text-gray-600">
+
+                    <th className="px-6 py-4">
                       Ticket
                     </th>
 
-                    <th className="px-6 py-4 text-sm font-semibold">
+                    <th className="px-6 py-4">
                       Employee
                     </th>
 
-                    <th className="px-6 py-4 text-sm font-semibold">
+                    <th className="px-6 py-4">
                       Email
                     </th>
 
-                    <th className="px-6 py-4 text-sm font-semibold">
+                    <th className="px-6 py-4">
                       Category
                     </th>
 
-                    <th className="px-6 py-4 text-sm font-semibold">
+                    <th className="px-6 py-4">
                       Subject
                     </th>
 
-                    <th className="px-6 py-4 text-sm font-semibold">
+                    <th className="px-6 py-4">
+                      Technician
+                    </th>
+
+                    <th className="px-6 py-4">
                       Status
                     </th>
+
                   </tr>
                 </thead>
+
 
                 <tbody>
 
                   {tickets.map((ticket) => (
+
                     <tr
                       key={ticket._id}
-                      className="border-b last:border-0 hover:bg-gray-50"
+                      className="border-b last:border-b-0"
                     >
 
-                      <td className="px-6 py-4 text-sm font-semibold">
-                        #{String(ticket._id).slice(-6)}
+                      {/* TICKET */}
+
+                      <td className="px-6 py-4 font-semibold">
+                        #{ticket._id.slice(-6)}
                       </td>
 
-                      <td className="px-6 py-4 text-sm">
+
+                      {/* EMPLOYEE */}
+
+                      <td className="px-6 py-4">
                         {ticket.createdBy?.name ||
-                          ticket.user?.name ||
                           "Unknown"}
                       </td>
 
+
+                      {/* EMAIL */}
+
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {ticket.createdBy?.email ||
-                          ticket.user?.email ||
                           "-"}
                       </td>
 
-                      <td className="px-6 py-4 text-sm">
-                        {ticket.category || "-"}
+
+                      {/* CATEGORY */}
+
+                      <td className="px-6 py-4">
+                        {ticket.category}
                       </td>
 
-                      <td className="px-6 py-4 text-sm">
-                        {ticket.subject ||
-                          ticket.title ||
-                          ticket.description ||
-                          "-"}
+
+                      {/* SUBJECT */}
+
+                      <td className="px-6 py-4">
+                        {ticket.title}
                       </td>
+
+
+                      {/* TECHNICIAN */}
 
                       <td className="px-6 py-4">
 
                         <select
-                          value={ticket.status || "Open"}
+                          value={
+                            ticket.assignedTo?._id ||
+                            ""
+                          }
+                          onChange={(e) =>
+                            assignTechnician(
+                              ticket._id,
+                              e.target.value
+                            )
+                          }
+                          className="w-44 rounded-lg border px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                        >
+
+                          <option value="">
+                            Unassigned
+                          </option>
+
+                          {technicians.map(
+                            (technician) => (
+
+                              <option
+                                key={
+                                  technician._id
+                                }
+                                value={
+                                  technician._id
+                                }
+                              >
+                                {technician.name}
+                              </option>
+
+                            )
+                          )}
+
+                        </select>
+
+                      </td>
+
+
+                      {/* STATUS */}
+
+                      <td className="px-6 py-4">
+
+                        <select
+                          value={
+                            ticket.status
+                          }
                           onChange={(e) =>
                             updateStatus(
                               ticket._id,
                               e.target.value
                             )
                           }
-                          className="rounded-lg border px-3 py-2 text-sm"
+                          className="rounded-lg border px-3 py-2 text-sm font-semibold outline-none focus:border-indigo-500"
                         >
+
                           <option value="Open">
                             Open
                           </option>
@@ -212,11 +368,13 @@ function AdminTickets() {
                           <option value="Closed">
                             Closed
                           </option>
+
                         </select>
 
                       </td>
 
                     </tr>
+
                   ))}
 
                 </tbody>
@@ -224,6 +382,7 @@ function AdminTickets() {
               </table>
 
             </div>
+
           )}
 
         </div>
