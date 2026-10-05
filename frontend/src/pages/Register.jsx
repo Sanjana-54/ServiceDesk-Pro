@@ -18,7 +18,6 @@ import {
   inputWrapper,
   inputWithIcon,
   inputIcon,
-  input,
   passwordToggle,
   errorBox,
   primaryButton,
@@ -214,7 +213,7 @@ function Register() {
             </div>
           </div>
 
-          {/* Role */}
+          {/* Account Type */}
           <div className={formGroup}>
             <label
               htmlFor="role"
@@ -228,7 +227,8 @@ function Register() {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className={input}
+              className={inputWithIcon}
+              required
             >
               <option value="Employee">
                 Employee
@@ -236,6 +236,14 @@ function Register() {
 
               <option value="Technician">
                 Technician
+              </option>
+
+              <option value="IT Manager">
+                IT Manager
+              </option>
+
+              <option value="Asset Manager">
+                Asset Manager
               </option>
             </select>
           </div>

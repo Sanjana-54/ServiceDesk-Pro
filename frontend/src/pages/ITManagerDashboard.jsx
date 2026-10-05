@@ -1,40 +1,28 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import api from "../services/api";
 
-function ITManagerDashboard() {
-  const navigate = useNavigate();
-
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalTickets: 0,
-    openTickets: 0,
-    resolvedTickets: 0,
-    technicians: 0,
-  });
-
+const ITManagerDashboard = () => {
+  const [tickets, setTickets] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  const user = JSON.parse(
-    localStorage.getItem("user") || "{}"
-  );
-
-  const fetchDashboard = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
 
-      const response = await api.get(
-        "/dashboard/admin"
-      );
+      const [ticketsRes, techniciansRes] = await Promise.all([
+        api.get("/tickets"),
+        api.get("/users/technicians"),
+      ]);
 
-      setStats(response.data.stats || {});
+      setTickets(ticketsRes.data.tickets || []);
+      setTechnicians(techniciansRes.data.technicians || []);
     } catch (error) {
-      console.error(error);
+      console.error("IT Manager data error:", error);
 
-      setError(
+      alert(
         error.response?.data?.message ||
-          "Unable to load dashboard"
+          "Failed to load IT Manager data"
       );
     } finally {
       setLoading(false);
@@ -42,204 +30,320 @@ function ITManagerDashboard() {
   };
 
   useEffect(() => {
-    fetchDashboard();
+    fetchData();
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
+  const updateTicket = async (ticketId, field, value) => {
+    try {
+      const data = {};
+
+      if (field === "assignedTo") {
+        data.assignedTo = value === "" ? null : value;
+      }
+
+      if (field === "status") {
+        data.status = value;
+      }
+
+      if (field === "priority") {
+        data.priority = value;
+      }
+
+      if (field === "category") {
+        data.category = value;
+      }
+
+      const response = await api.patch(
+        `/tickets/${ticketId}`,
+        data
+      );
+
+      setTickets((previousTickets) =>
+        previousTickets.map((ticket) =>
+          ticket._id === ticketId
+            ? response.data.ticket
+            : ticket
+        )
+      );
+    } catch (error) {
+      console.error("Update ticket error:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to update ticket"
+      );
+    }
   };
 
-  const cards = [
-    {
-      title: "Total Users",
-      value: stats.totalUsers,
-      icon: "👥",
-    },
-    {
-      title: "Total Tickets",
-      value: stats.totalTickets,
-      icon: "🎫",
-    },
-    {
-      title: "Open Tickets",
-      value: stats.openTickets,
-      icon: "📂",
-    },
-    {
-      title: "Resolved Tickets",
-      value: stats.resolvedTickets,
-      icon: "✅",
-    },
-    {
-      title: "Technicians",
-      value: stats.technicians,
-      icon: "🧑‍💻",
-    },
-  ];
+  const getStatusClass = (status) => {
+    if (status === "Resolved") return "resolved";
+    if (status === "In Progress") return "progress";
+    if (status === "Closed") return "closed";
+    return "open";
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.center}>
+        <h2>Loading IT Manager Dashboard...</h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              IT Manager Dashboard
-            </h1>
-
-            <p className="text-sm text-gray-500">
-              Manage IT operations and support
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold">
-                {user.name || "IT Manager"}
-              </p>
-
-              <p className="text-xs text-gray-500">
-                {user.role || "IT Manager"}
-              </p>
-            </div>
-
-            <button
-              onClick={logout}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-            >
-              Logout
-            </button>
-
-          </div>
-
-        </div>
-      </header>
-
-
-      <main className="mx-auto max-w-7xl px-6 py-8">
-
-        {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-8">
-
-          <h2 className="text-xl font-bold text-gray-900">
-            Overview
-          </h2>
-
-          <p className="mt-1 text-sm text-gray-500">
-            Monitor your IT support operations.
+    <div style={styles.page}>
+      <div style={styles.header}>
+        <div>
+          <p style={styles.label}>IT MANAGEMENT</p>
+          <h1>IT Manager Dashboard</h1>
+          <p style={styles.subtitle}>
+            Manage service tickets and technician assignments.
           </p>
-
         </div>
 
+        <button
+          style={styles.refreshButton}
+          onClick={fetchData}
+        >
+          Refresh
+        </button>
+      </div>
 
-        {loading ? (
+      <div style={styles.stats}>
+        <div style={styles.card}>
+          <span>Total Tickets</span>
+          <strong>{tickets.length}</strong>
+        </div>
 
-          <div className="rounded-xl bg-white p-10 text-center">
-            Loading dashboard...
-          </div>
+        <div style={styles.card}>
+          <span>Open</span>
+          <strong>
+            {
+              tickets.filter(
+                (ticket) => ticket.status === "Open"
+              ).length
+            }
+          </strong>
+        </div>
 
+        <div style={styles.card}>
+          <span>In Progress</span>
+          <strong>
+            {
+              tickets.filter(
+                (ticket) =>
+                  ticket.status === "In Progress"
+              ).length
+            }
+          </strong>
+        </div>
+
+        <div style={styles.card}>
+          <span>Resolved</span>
+          <strong>
+            {
+              tickets.filter(
+                (ticket) => ticket.status === "Resolved"
+              ).length
+            }
+          </strong>
+        </div>
+      </div>
+
+      <div style={styles.section}>
+        <h2>All Service Tickets</h2>
+
+        {tickets.length === 0 ? (
+          <p>No tickets available.</p>
         ) : (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Subject</th>
+                  <th>Category</th>
+                  <th>Priority</th>
+                  <th>Technician</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+              <tbody>
+                {tickets.map((ticket) => (
+                  <tr key={ticket._id}>
+                    <td>
+                      {ticket.createdBy?.name || "Unknown"}
+                    </td>
 
-            {cards.map((card) => (
+                    <td>
+                      <strong>{ticket.title}</strong>
+                    </td>
 
-              <div
-                key={card.title}
-                className="rounded-xl border bg-white p-5 shadow-sm"
-              >
+                    <td>{ticket.category}</td>
 
-                <div className="mb-4 text-3xl">
-                  {card.icon}
-                </div>
+                    <td>
+                      <select
+                        value={ticket.priority}
+                        onChange={(e) =>
+                          updateTicket(
+                            ticket._id,
+                            "priority",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">
+                          Medium
+                        </option>
+                        <option value="High">High</option>
+                        <option value="Critical">
+                          Critical
+                        </option>
+                      </select>
+                    </td>
 
-                <p className="text-sm text-gray-500">
-                  {card.title}
-                </p>
+                    <td>
+                      <select
+                        value={
+                          ticket.assignedTo?._id || ""
+                        }
+                        onChange={(e) =>
+                          updateTicket(
+                            ticket._id,
+                            "assignedTo",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">
+                          Unassigned
+                        </option>
 
-                <h3 className="mt-1 text-3xl font-bold text-gray-900">
-                  {card.value}
-                </h3>
+                        {technicians.map((technician) => (
+                          <option
+                            key={technician._id}
+                            value={technician._id}
+                          >
+                            {technician.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
 
-              </div>
-
-            ))}
-
+                    <td>
+                      <select
+                        className={getStatusClass(
+                          ticket.status
+                        )}
+                        value={ticket.status}
+                        onChange={(e) =>
+                          updateTicket(
+                            ticket._id,
+                            "status",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="Open">Open</option>
+                        <option value="In Progress">
+                          In Progress
+                        </option>
+                        <option value="Resolved">
+                          Resolved
+                        </option>
+                        <option value="Closed">
+                          Closed
+                        </option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
         )}
-
-
-        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-
-          <button
-            onClick={() =>
-              navigate("/technician-management")
-            }
-            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
-          >
-            <div className="text-3xl">🧑‍💻</div>
-
-            <h3 className="mt-3 font-bold text-gray-900">
-              Technician Management
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              View and manage technicians.
-            </p>
-          </button>
-
-
-          <button
-            onClick={() =>
-              navigate("/ticket-management")
-            }
-            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
-          >
-            <div className="text-3xl">🎫</div>
-
-            <h3 className="mt-3 font-bold text-gray-900">
-              Ticket Management
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Monitor and assign support tickets.
-            </p>
-          </button>
-
-
-          <button
-            onClick={() =>
-              navigate("/assets")
-            }
-            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:border-indigo-400"
-          >
-            <div className="text-3xl">💻</div>
-
-            <h3 className="mt-3 font-bold text-gray-900">
-              Asset Management
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              View organizational assets.
-            </p>
-          </button>
-
-        </div>
-
-      </main>
-
+      </div>
     </div>
   );
-}
+};
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    padding: "40px",
+    background: "#f6f7fb",
+    fontFamily: "Arial, sans-serif",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "30px",
+  },
+
+  label: {
+    color: "#4338ca",
+    fontWeight: "bold",
+    marginBottom: "5px",
+  },
+
+  headerTitle: {
+    margin: 0,
+  },
+
+  subtitle: {
+    color: "#6b7280",
+  },
+
+  refreshButton: {
+    padding: "12px 20px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    background: "white",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  stats: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "20px",
+    marginBottom: "30px",
+  },
+
+  card: {
+    background: "white",
+    padding: "25px",
+    borderRadius: "12px",
+    border: "1px solid #ddd",
+  },
+
+  section: {
+    background: "white",
+    padding: "25px",
+    borderRadius: "12px",
+    border: "1px solid #ddd",
+  },
+
+  tableWrapper: {
+    overflowX: "auto",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+
+  center: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+};
 
 export default ITManagerDashboard;

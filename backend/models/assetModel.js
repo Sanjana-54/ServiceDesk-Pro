@@ -2,18 +2,6 @@ import mongoose from "mongoose";
 
 const assetSchema = new mongoose.Schema(
   {
-    assetName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    assetType: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     assetTag: {
       type: String,
       required: true,
@@ -21,9 +9,30 @@ const assetSchema = new mongoose.Schema(
       trim: true,
     },
 
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    category: {
+      type: String,
+      enum: [
+        "Laptop",
+        "Desktop",
+        "Monitor",
+        "Printer",
+        "Network Device",
+        "Mobile",
+        "Other",
+      ],
+      default: "Other",
+    },
+
     serialNumber: {
       type: String,
       trim: true,
+      default: "",
     },
 
     status: {
@@ -48,9 +57,9 @@ const assetSchema = new mongoose.Schema(
       default: null,
     },
 
-    description: {
+    notes: {
       type: String,
-      trim: true,
+      default: "",
     },
   },
   {
@@ -58,6 +67,7 @@ const assetSchema = new mongoose.Schema(
   }
 );
 
-const Asset = mongoose.model("Asset", assetSchema);
-
-export default Asset;
+export default mongoose.model(
+  "Asset",
+  assetSchema
+);

@@ -1,271 +1,514 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 function AssetManagerDashboard() {
-  const navigate = useNavigate();
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
-  const [assets] = useState([
-    {
-      id: "AST-001",
-      name: "Dell Latitude 5440",
-      category: "Laptop",
-      assignedTo: "Unassigned",
-      status: "Available",
-    },
-    {
-      id: "AST-002",
-      name: "HP ProDesk 400",
-      category: "Desktop",
-      assignedTo: "Unassigned",
-      status: "Available",
-    },
-    {
-      id: "AST-003",
-      name: "Cisco Router",
-      category: "Network",
-      assignedTo: "IT Department",
-      status: "Assigned",
-    },
-  ]);
+  // IMPORTANT:
+  // These names must match the backend:
+  // name, type, assetTag
+  const [asset, setAsset] = useState({
+    assetTag: "",
+    name: "",
+    type: "Laptop",
+    serialNumber: "",
+    purchaseDate: "",
+    description: "",
+  });
 
-  const user = JSON.parse(
-    localStorage.getItem("user") || "{}"
-  );
+  // =========================
+  // FETCH ASSETS
+  // =========================
+  const fetchAssets = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
+      const response = await api.get("/assets");
+
+      setAssets(
+        response.data?.assets ||
+          response.data ||
+          []
+      );
+    } catch (err) {
+      console.error("Fetch assets error:", err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load assets."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchAssets();
+  }, []);
+
+  // =========================
+  // HANDLE INPUT
+  // =========================
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setAsset((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setError("");
+  };
+
+  // =========================
+  // CREATE ASSET
+  // =========================
+  const createAsset = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
+    // Frontend validation
+    if (!asset.name.trim()) {
+      setError("Asset name is required.");
+      return;
+    }
+
+    if (!asset.type.trim()) {
+      setError("Asset type is required.");
+      return;
+    }
+
+    if (!asset.assetTag.trim()) {
+      setError("Asset tag is required.");
+      return;
+    }
+
+    try {
+      setCreating(true);
+
+      // EXACT DATA SENT TO BACKEND
+      const payload = {
+        name: asset.name.trim(),
+        type: asset.type.trim(),
+        assetTag: asset.assetTag.trim(),
+        serialNumber: asset.serialNumber.trim(),
+        purchaseDate: asset.purchaseDate,
+        description: asset.description.trim(),
+      };
+
+      console.log("Creating asset with:", payload);
+
+      const response = await api.post(
+        "/assets",
+        payload
+      );
+
+      console.log(
+        "Asset created successfully:",
+        response.data
+      );
+
+      alert("Asset created successfully.");
+
+      // Clear form
+      setAsset({
+        assetTag: "",
+        name: "",
+        type: "Laptop",
+        serialNumber: "",
+        purchaseDate: "",
+        description: "",
+      });
+
+      // Close form
+      setShowForm(false);
+
+      // Refresh assets
+      await fetchAssets();
+    } catch (err) {
+      console.error(
+        "Create asset error:",
+        err
+      );
+
+      console.error(
+        "Backend response:",
+        err.response?.data
+      );
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to create asset."
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // =========================
+  // COUNTS
+  // =========================
   const totalAssets = assets.length;
 
   const availableAssets = assets.filter(
-    (asset) => asset.status === "Available"
+    (item) =>
+      item.status === "Available" ||
+      item.status === "available" ||
+      !item.assignedTo
   ).length;
 
   const assignedAssets = assets.filter(
-    (asset) => asset.status === "Assigned"
+    (item) =>
+      item.status === "Assigned" ||
+      item.status === "assigned" ||
+      item.assignedTo
+  ).length;
+
+  const maintenanceAssets = assets.filter(
+    (item) =>
+      item.status === "Maintenance" ||
+      item.status === "maintenance"
   ).length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 p-6">
 
-      {/* HEADER */}
+      {/* =========================
+          HEADER
+      ========================= */}
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-indigo-600">
+            Asset Management
+          </p>
 
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Asset Manager Dashboard
-            </h1>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+            Asset Manager Dashboard
+          </h1>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Manage and track organizational assets
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-gray-900">
-                {user.name || "Asset Manager"}
-              </p>
-
-              <p className="text-xs text-gray-500">
-                Asset Manager
-              </p>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-            >
-              Logout
-            </button>
-
-          </div>
-
-        </div>
-      </header>
-
-
-      {/* MAIN */}
-
-      <main className="mx-auto max-w-7xl px-6 py-8">
-
-        {/* STATISTICS */}
-
-        <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
-
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Total Assets
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              {totalAssets}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Available
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-green-600">
-              {availableAssets}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Assigned
-            </p>
-
-            <p className="mt-2 text-3xl font-bold text-blue-600">
-              {assignedAssets}
-            </p>
-          </div>
-
+          <p className="mt-1 text-slate-500">
+            Manage company assets and employee assignments.
+          </p>
         </div>
 
+        <div className="flex gap-3">
 
-        {/* MANAGEMENT */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowForm(!showForm);
+              setError("");
+            }}
+            className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
+          >
+            {showForm ? "Close" : "+ Add Asset"}
+          </button>
 
-        <div className="mb-8">
+          <button
+            type="button"
+            onClick={fetchAssets}
+            className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-100"
+          >
+            Refresh
+          </button>
 
-          <h2 className="mb-4 text-xl font-bold text-gray-900">
-            Asset Operations
+        </div>
+      </div>
+
+      {/* =========================
+          ERROR
+      ========================= */}
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
+      {/* =========================
+          ADD ASSET FORM
+      ========================= */}
+      {showForm && (
+        <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+
+          <h2 className="mb-5 text-xl font-semibold text-slate-900">
+            Add New Asset
           </h2>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <form
+            onSubmit={createAsset}
+            className="grid gap-4"
+          >
 
-            <button
-              onClick={() =>
-                navigate("/assets")
-              }
-              className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:border-indigo-300 hover:shadow-md"
+            {/* Asset Tag */}
+            <input
+              type="text"
+              name="assetTag"
+              placeholder="Asset Tag (example: T01)"
+              value={asset.assetTag}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+              required
+            />
+
+            {/* Asset Name */}
+            <input
+              type="text"
+              name="name"
+              placeholder="Asset Name (example: Dell Laptop)"
+              value={asset.name}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+              required
+            />
+
+            {/* Asset Type */}
+            <select
+              name="type"
+              value={asset.type}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+              required
             >
+              <option value="Laptop">
+                Laptop
+              </option>
 
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-2xl">
-                💻
-              </div>
+              <option value="Desktop">
+                Desktop
+              </option>
 
-              <h3 className="text-lg font-bold text-gray-900">
-                Asset Management
-              </h3>
+              <option value="Monitor">
+                Monitor
+              </option>
 
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Add, view, update and manage organizational
-                hardware and other assets.
-              </p>
+              <option value="Keyboard">
+                Keyboard
+              </option>
 
-              <span className="mt-4 inline-block text-sm font-semibold text-indigo-600">
-                Manage Assets →
-              </span>
+              <option value="Mouse">
+                Mouse
+              </option>
 
+              <option value="Printer">
+                Printer
+              </option>
+
+              <option value="Phone">
+                Phone
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+            </select>
+
+            {/* Serial Number */}
+            <input
+              type="text"
+              name="serialNumber"
+              placeholder="Serial Number (example: DL001)"
+              value={asset.serialNumber}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+            />
+
+            {/* Purchase Date */}
+            <input
+              type="date"
+              name="purchaseDate"
+              value={asset.purchaseDate}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+            />
+
+            {/* Description */}
+            <textarea
+              name="description"
+              placeholder="Description (example: Company laptop)"
+              value={asset.description}
+              onChange={handleChange}
+              rows="4"
+              className="w-full resize-none rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+            />
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={creating}
+              className="w-fit rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {creating
+                ? "Creating..."
+                : "Create Asset"}
             </button>
 
+          </form>
+        </div>
+      )}
 
-            <button
-              onClick={() =>
-                navigate("/asset-assignments")
-              }
-              className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:border-blue-300 hover:shadow-md"
-            >
+      {/* =========================
+          STATISTICS
+      ========================= */}
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-2xl">
-                👤
-              </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Total Assets
+          </p>
 
-              <h3 className="text-lg font-bold text-gray-900">
-                Asset Assignments
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Track which employees or departments are
-                using organizational assets.
-              </p>
-
-              <span className="mt-4 inline-block text-sm font-semibold text-blue-600">
-                View Assignments →
-              </span>
-
-            </button>
-
-          </div>
-
+          <p className="mt-2 text-3xl font-bold text-slate-900">
+            {totalAssets}
+          </p>
         </div>
 
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Available
+          </p>
 
-        {/* ASSET LIST */}
+          <p className="mt-2 text-3xl font-bold text-green-600">
+            {availableAssets}
+          </p>
+        </div>
 
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Assigned
+          </p>
 
-          <div className="border-b border-gray-200 px-6 py-5">
+          <p className="mt-2 text-3xl font-bold text-blue-600">
+            {assignedAssets}
+          </p>
+        </div>
 
-            <h2 className="text-lg font-bold text-gray-900">
-              Recent Assets
-            </h2>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Maintenance
+          </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Overview of currently tracked assets
+          <p className="mt-2 text-3xl font-bold text-orange-600">
+            {maintenanceAssets}
+          </p>
+        </div>
+
+      </div>
+
+      {/* =========================
+          ASSET INVENTORY
+      ========================= */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+
+        <div className="mb-5">
+          <h2 className="text-xl font-semibold text-slate-900">
+            Asset Inventory
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            All company assets
+          </p>
+        </div>
+
+        {loading ? (
+          <p className="py-8 text-center text-slate-500">
+            Loading assets...
+          </p>
+        ) : assets.length === 0 ? (
+          <div className="rounded-lg bg-slate-50 py-10 text-center">
+
+            <p className="font-medium text-slate-700">
+              No assets found.
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Click "+ Add Asset" to create your first asset.
             </p>
 
           </div>
+        ) : (
+          <div className="overflow-x-auto">
 
+            <table className="w-full min-w-[800px] border-collapse">
 
-          <div className="divide-y divide-gray-100">
+              <thead>
+                <tr className="border-b border-slate-200 text-left">
 
-            {assets.map((asset) => (
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                    Asset Tag
+                  </th>
 
-              <div
-                key={asset.id}
-                className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
-              >
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                    Name
+                  </th>
 
-                <div>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                    Type
+                  </th>
 
-                  <h3 className="font-semibold text-gray-900">
-                    {asset.name}
-                  </h3>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                    Serial Number
+                  </th>
 
-                  <p className="mt-1 text-sm text-gray-500">
-                    {asset.id} • {asset.category}
-                  </p>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                    Status
+                  </th>
 
-                </div>
+                </tr>
+              </thead>
 
+              <tbody>
 
-                <div className="flex items-center gap-4">
-
-                  <span className="text-sm text-gray-500">
-                    {asset.assignedTo}
-                  </span>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      asset.status === "Available"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
+                {assets.map((item) => (
+                  <tr
+                    key={
+                      item._id ||
+                      item.id ||
+                      item.assetTag
+                    }
+                    className="border-b border-slate-100"
                   >
-                    {asset.status}
-                  </span>
 
-                </div>
+                    <td className="px-4 py-4 font-medium text-slate-900">
+                      {item.assetTag || "-"}
+                    </td>
 
-              </div>
+                    <td className="px-4 py-4 text-slate-700">
+                      {item.name || "-"}
+                    </td>
 
-            ))}
+                    <td className="px-4 py-4 text-slate-700">
+                      {item.type || "-"}
+                    </td>
+
+                    <td className="px-4 py-4 text-slate-700">
+                      {item.serialNumber || "-"}
+                    </td>
+
+                    <td className="px-4 py-4">
+
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                        {item.status || "Available"}
+                      </span>
+
+                    </td>
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
 
           </div>
+        )}
 
-        </div>
-
-      </main>
+      </div>
 
     </div>
   );
