@@ -1,5 +1,61 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    message: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: true }
+);
+
+const evidenceSchema = new mongoose.Schema(
+  {
+    fileName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    fileUrl: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    fileType: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: true }
+);
+
 const ticketSchema = new mongoose.Schema(
   {
     title: {
@@ -59,15 +115,22 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+
+    comments: {
+      type: [commentSchema],
+      default: [],
+    },
+
+    evidence: {
+      type: [evidenceSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Ticket = mongoose.model(
-  "Ticket",
-  ticketSchema
-);
+const Ticket = mongoose.model("Ticket", ticketSchema);
 
 export default Ticket;
