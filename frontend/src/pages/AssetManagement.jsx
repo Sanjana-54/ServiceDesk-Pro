@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import api from "../services/api";
 
 function AssetManagement() {
@@ -12,8 +14,7 @@ function AssetManagement() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [showForm, setShowForm] =
-    useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
     assetName: "",
@@ -28,29 +29,20 @@ function AssetManagement() {
     try {
       setLoading(true);
 
-      const [
-        assetsResponse,
-        usersResponse,
-      ] = await Promise.all([
+      const [assetsResponse, usersResponse] = await Promise.all([
         api.get("/assets"),
         api.get("/assets/users"),
       ]);
 
-      setAssets(
-        assetsResponse.data.assets || []
-      );
-
-      setUsers(
-        usersResponse.data.users || []
-      );
+      setAssets(assetsResponse.data.assets || []);
+      setUsers(usersResponse.data.users || []);
 
       setError("");
     } catch (error) {
       console.error(error);
 
       setError(
-        error.response?.data?.message ||
-          "Unable to load assets"
+        error.response?.data?.message || "Unable to load assets"
       );
     } finally {
       setLoading(false);
@@ -77,9 +69,7 @@ function AssetManagement() {
 
       await api.post("/assets", form);
 
-      setMessage(
-        "Asset created successfully"
-      );
+      setMessage("Asset created successfully");
 
       setForm({
         assetName: "",
@@ -95,26 +85,19 @@ function AssetManagement() {
       await loadData();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to create asset"
+        error.response?.data?.message || "Unable to create asset"
       );
     }
   };
 
-  const assignAsset = async (
-    assetId,
-    userId
-  ) => {
+  const assignAsset = async (assetId, userId) => {
     try {
       setError("");
       setMessage("");
 
-      await api.patch(
-        `/assets/${assetId}/assign`,
-        {
-          userId: userId || null,
-        }
-      );
+      await api.patch(`/assets/${assetId}/assign`, {
+        userId: userId || null,
+      });
 
       setMessage(
         userId
@@ -125,8 +108,7 @@ function AssetManagement() {
       await loadData();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to assign asset"
+        error.response?.data?.message || "Unable to assign asset"
       );
     }
   };
@@ -142,19 +124,14 @@ function AssetManagement() {
       setError("");
       setMessage("");
 
-      await api.delete(
-        `/assets/${assetId}`
-      );
+      await api.delete(`/assets/${assetId}`);
 
-      setMessage(
-        "Asset deleted successfully"
-      );
+      setMessage("Asset deleted successfully");
 
       await loadData();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to delete asset"
+        error.response?.data?.message || "Unable to delete asset"
       );
     }
   };
@@ -179,7 +156,6 @@ function AssetManagement() {
     <div className="min-h-screen bg-slate-50">
 
       <header className="border-b bg-white">
-
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
           <div>
@@ -193,18 +169,14 @@ function AssetManagement() {
           </div>
 
           <button
-            onClick={() =>
-              navigate("/asset-manager")
-            }
+            onClick={() => navigate("/asset-manager")}
             className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
           >
             ← Dashboard
           </button>
 
         </div>
-
       </header>
-
 
       <main className="mx-auto max-w-7xl px-6 py-8">
 
@@ -220,7 +192,6 @@ function AssetManagement() {
           </div>
         )}
 
-
         <div className="mb-6 flex items-center justify-between">
 
           <div>
@@ -234,18 +205,13 @@ function AssetManagement() {
           </div>
 
           <button
-            onClick={() =>
-              setShowForm(!showForm)
-            }
+            onClick={() => setShowForm(!showForm)}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
           >
-            {showForm
-              ? "Close"
-              : "+ Add Asset"}
+            {showForm ? "Close" : "+ Add Asset"}
           </button>
 
         </div>
-
 
         {showForm && (
           <form
@@ -322,29 +288,22 @@ function AssetManagement() {
           </form>
         )}
 
-
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
 
           {loading ? (
-
             <div className="p-10 text-center text-gray-500">
               Loading assets...
             </div>
-
           ) : assets.length === 0 ? (
-
             <div className="p-10 text-center text-gray-500">
               No assets found.
             </div>
-
           ) : (
-
             <div className="overflow-x-auto">
 
               <table className="w-full min-w-[1200px]">
 
                 <thead className="bg-gray-50">
-
                   <tr>
 
                     <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
@@ -372,13 +331,11 @@ function AssetManagement() {
                     </th>
 
                   </tr>
-
                 </thead>
 
                 <tbody className="divide-y">
 
                   {assets.map((asset) => (
-
                     <tr key={asset._id}>
 
                       <td className="px-5 py-5">
@@ -388,8 +345,7 @@ function AssetManagement() {
                         </p>
 
                         <p className="text-xs text-gray-500">
-                          {asset.serialNumber ||
-                            "No serial number"}
+                          {asset.serialNumber || "No serial number"}
                         </p>
 
                       </td>
@@ -417,10 +373,7 @@ function AssetManagement() {
                       <td className="px-5 py-5">
 
                         <select
-                          value={
-                            asset.assignedTo?._id ||
-                            ""
-                          }
+                          value={asset.assignedTo?._id || ""}
                           onChange={(e) =>
                             assignAsset(
                               asset._id,
@@ -435,14 +388,12 @@ function AssetManagement() {
                           </option>
 
                           {users.map((user) => (
-
                             <option
                               key={user._id}
                               value={user._id}
                             >
                               {user.name}
                             </option>
-
                           ))}
 
                         </select>
@@ -453,9 +404,7 @@ function AssetManagement() {
 
                         <button
                           onClick={() =>
-                            deleteAsset(
-                              asset._id
-                            )
+                            deleteAsset(asset._id)
                           }
                           className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
                         >
@@ -465,7 +414,6 @@ function AssetManagement() {
                       </td>
 
                     </tr>
-
                   ))}
 
                 </tbody>
@@ -473,7 +421,6 @@ function AssetManagement() {
               </table>
 
             </div>
-
           )}
 
         </div>

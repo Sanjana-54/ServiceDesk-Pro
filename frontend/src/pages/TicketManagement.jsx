@@ -1,44 +1,39 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-function TicketManagement() {
-  const navigate = useNavigate();
-
+export default function TicketManagement() {
   const [tickets, setTickets] = useState([]);
-  const [technicians, setTechnicians] =
-    useState([]);
-
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const fetchData = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      setError("");
 
-      const [
-        ticketsResponse,
-        techniciansResponse,
-      ] = await Promise.all([
-        api.get("/tickets"),
-        api.get("/users/technicians"),
-      ]);
+      const [ticketsResponse, techniciansResponse] =
+        await Promise.all([
+          api.get("/tickets"),
+          api.get("/management/technicians"),
+        ]);
 
       setTickets(
-        ticketsResponse.data.tickets || []
+        ticketsResponse.data.tickets ||
+          ticketsResponse.data ||
+          []
       );
 
       setTechnicians(
-        techniciansResponse.data.technicians || []
+        techniciansResponse.data.technicians ||
+          techniciansResponse.data.users ||
+          techniciansResponse.data ||
+          []
       );
     } catch (error) {
       console.error(error);
-
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to load tickets"
+          "Unable to load ticket management data."
       );
     } finally {
       setLoading(false);
@@ -46,268 +41,129 @@ function TicketManagement() {
   };
 
   useEffect(() => {
-    fetchData();
+    loadData();
   }, []);
 
-  const updateStatus = async (
-    ticketId,
-    status
-  ) => {
+  const updatePriority = async (ticketId, priority) => {
     try {
-      setError("");
-      setMessage("");
+      await api.patch(`/management/tickets/${ticketId}/priority`, {
+        priority,
+      });
 
-      await api.patch(
-        `/tickets/${ticketId}/status`,
-        { status }
-      );
-
-      setMessage(
-        "Ticket status updated successfully"
-      );
-
-      await fetchData();
+      setMessage("Priority updated.");
+      loadData();
     } catch (error) {
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to update ticket"
+          "Unable to update priority."
       );
     }
   };
 
-  const assignTicket = async (
-    ticketId,
-    technicianId
-  ) => {
+  const assignTicket = async (ticketId, technicianId) => {
+    if (!technicianId) return;
+
     try {
-      setError("");
-      setMessage("");
+      await api.patch(`/management/tickets/${ticketId}/assign`, {
+        assignedTo: technicianId,
+      });
 
-      await api.patch(
-        `/tickets/${ticketId}/assign`,
-        {
-          technicianId:
-            technicianId || null,
-        }
-      );
-
-      setMessage(
-        "Ticket assignment updated"
-      );
-
-      await fetchData();
+      setMessage("Ticket assigned successfully.");
+      loadData();
     } catch (error) {
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to assign ticket"
+          "Unable to assign ticket."
       );
     }
-  };
-
-  const getStatusClass = (status) => {
-    if (status === "Resolved") {
-      return "bg-green-100 text-green-700";
-    }
-
-    if (status === "In Progress") {
-      return "bg-blue-100 text-blue-700";
-    }
-
-    if (status === "Closed") {
-      return "bg-gray-100 text-gray-700";
-    }
-
-    return "bg-yellow-100 text-yellow-700";
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#101b3d]">
+            Ticket Management
+          </h1>
 
-      <header className="border-b bg-white">
-
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Ticket Management
-            </h1>
-
-            <p className="text-sm text-gray-500">
-              Monitor and assign support tickets
-            </p>
-          </div>
-
-          <button
-            onClick={() =>
-              navigate("/it-manager")
-            }
-            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-          >
-            ← Dashboard
-          </button>
-
+          <p className="mt-1 text-slate-500">
+            Assign technicians and manage ticket priorities.
+          </p>
         </div>
 
-      </header>
-
-
-      <main className="mx-auto max-w-7xl px-6 py-8">
-
         {message && (
-          <div className="mb-5 rounded-lg bg-green-50 p-4 text-sm text-green-700">
+          <div className="mb-5 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
             {message}
           </div>
         )}
 
-        {error && (
-          <div className="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-
-        <div className="mb-6">
-
-          <h2 className="text-xl font-bold">
-            Support Tickets
-          </h2>
-
-          <p className="text-sm text-gray-500">
-            Total tickets: {tickets.length}
-          </p>
-
-        </div>
-
-
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-
+        <div className="rounded-2xl bg-white shadow-sm">
           {loading ? (
-
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               Loading tickets...
-            </div>
-
+            </p>
           ) : tickets.length === 0 ? (
-
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               No tickets found.
-            </div>
-
+            </p>
           ) : (
-
             <div className="overflow-x-auto">
-
-              <table className="w-full min-w-[1100px]">
-
-                <thead className="bg-gray-50">
-
-                  <tr>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Ticket
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Created By
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Priority
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Status
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Technician
-                    </th>
-
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b bg-slate-50 text-sm text-slate-500">
+                    <th className="px-5 py-4">Ticket</th>
+                    <th className="px-5 py-4">Title</th>
+                    <th className="px-5 py-4">Priority</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4">Technician</th>
                   </tr>
-
                 </thead>
 
-
-                <tbody className="divide-y">
-
+                <tbody>
                   {tickets.map((ticket) => (
+                    <tr
+                      key={ticket._id}
+                      className="border-b last:border-0 hover:bg-slate-50"
+                    >
+                      <td className="px-5 py-4 font-semibold text-[#101b3d]">
+                        #{ticket._id.slice(-6)}
+                      </td>
 
-                    <tr key={ticket._id}>
-
-                      <td className="px-5 py-5">
-
-                        <p className="font-semibold text-gray-900">
+                      <td className="max-w-xs px-5 py-4">
+                        <p className="truncate font-medium">
                           {ticket.title}
                         </p>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          #{ticket._id?.slice(-6)}
-                        </p>
-
                       </td>
 
-
-                      <td className="px-5 py-5 text-sm text-gray-600">
-
-                        {ticket.createdBy?.name ||
-                          "Unknown"}
-
-                      </td>
-
-
-                      <td className="px-5 py-5">
-
-                        <span className="text-sm font-semibold">
-                          {ticket.priority}
-                        </span>
-
-                      </td>
-
-
-                      <td className="px-5 py-5">
-
+                      <td className="px-5 py-4">
                         <select
-                          value={
-                            ticket.status || "Open"
-                          }
+                          value={ticket.priority || "Medium"}
                           onChange={(e) =>
-                            updateStatus(
+                            updatePriority(
                               ticket._id,
                               e.target.value
                             )
                           }
-                          className={`rounded-full border-0 px-3 py-1.5 text-xs font-semibold ${getStatusClass(
-                            ticket.status
-                          )}`}
+                          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#ff6b5f]"
                         >
-
-                          <option value="Open">
-                            Open
-                          </option>
-
-                          <option value="In Progress">
-                            In Progress
-                          </option>
-
-                          <option value="Resolved">
-                            Resolved
-                          </option>
-
-                          <option value="Closed">
-                            Closed
-                          </option>
-
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                          <option value="Critical">Critical</option>
                         </select>
-
                       </td>
 
+                      <td className="px-5 py-4">
+                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                          {ticket.status}
+                        </span>
+                      </td>
 
-                      <td className="px-5 py-5">
-
+                      <td className="px-5 py-4">
                         <select
                           value={
                             ticket.assignedTo?._id ||
-                            ticket.assignedTechnician?._id ||
+                            ticket.assignedTo ||
                             ""
                           }
                           onChange={(e) =>
@@ -316,48 +172,31 @@ function TicketManagement() {
                               e.target.value
                             )
                           }
-                          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                          className="min-w-44 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#ff6b5f]"
                         >
-
                           <option value="">
-                            Unassigned
+                            Select Technician
                           </option>
 
-                          {technicians.map(
-                            (technician) => (
-
-                              <option
-                                key={technician._id}
-                                value={technician._id}
-                              >
-                                {technician.name}
-                              </option>
-
-                            )
-                          )}
-
+                          {technicians.map((technician) => (
+                            <option
+                              key={technician._id}
+                              value={technician._id}
+                            >
+                              {technician.name ||
+                                technician.email}
+                            </option>
+                          ))}
                         </select>
-
                       </td>
-
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
-
           )}
-
         </div>
-
-      </main>
-
+      </div>
     </div>
   );
 }
-
-export default TicketManagement;

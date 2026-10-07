@@ -9,6 +9,9 @@ import Register from "./pages/Register";
 
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
+import TechnicianTickets from "./pages/TechnicianTickets";
+import TechnicianWorkLogs from "./pages/TechnicianWorkLogs";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import ITManagerDashboard from "./pages/ITManagerDashboard";
 import AssetManagerDashboard from "./pages/AssetManagerDashboard";
@@ -23,18 +26,20 @@ import AssetManagement from "./pages/AssetManagement";
 import TechnicianManagement from "./pages/TechnicianManagement";
 import TicketManagement from "./pages/TicketManagement";
 
-import ProtectedRoute from "./components/ProtectedRoute";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import KnowledgeBaseManagement from "./pages/KnowledgeBaseManagement";
+import SLAMonitor from "./pages/SLAMonitor";
+import Reports from "./pages/Reports";
+import AuditLogs from "./pages/AuditLogs";
 
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
-        {/* =========================
-            AUTH
-        ========================= */}
+        {/* AUTHENTICATION */}
 
         <Route
           path="/"
@@ -46,17 +51,12 @@ function App() {
           element={<Register />}
         />
 
-
-        {/* =========================
-            EMPLOYEE
-        ========================= */}
+        {/* EMPLOYEE */}
 
         <Route
           path="/employee"
           element={
-            <ProtectedRoute
-              allowedRoles={["Employee"]}
-            >
+            <ProtectedRoute allowedRoles={["Employee"]}>
               <EmployeeDashboard />
             </ProtectedRoute>
           }
@@ -65,9 +65,7 @@ function App() {
         <Route
           path="/my-tickets"
           element={
-            <ProtectedRoute
-              allowedRoles={["Employee"]}
-            >
+            <ProtectedRoute allowedRoles={["Employee"]}>
               <MyTickets />
             </ProtectedRoute>
           }
@@ -76,33 +74,40 @@ function App() {
         <Route
           path="/create-ticket"
           element={
-            <ProtectedRoute
-              allowedRoles={["Employee"]}
-            >
+            <ProtectedRoute allowedRoles={["Employee"]}>
               <CreateTicket />
             </ProtectedRoute>
           }
         />
 
-
-        {/* =========================
-            TECHNICIAN
-        ========================= */}
+        {/* TECHNICIAN */}
 
         <Route
           path="/technician"
           element={
-            <ProtectedRoute
-              allowedRoles={["Technician"]}
-            >
+            <ProtectedRoute allowedRoles={["Technician"]}>
               <TechnicianDashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Technician management:
-            System Admin + IT Manager
-        */}
+        <Route
+          path="/technician/tickets"
+          element={
+            <ProtectedRoute allowedRoles={["Technician"]}>
+              <TechnicianTickets />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/technician/work-logs"
+          element={
+            <ProtectedRoute allowedRoles={["Technician"]}>
+              <TechnicianWorkLogs />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/technician-management"
@@ -118,17 +123,12 @@ function App() {
           }
         />
 
-
-        {/* =========================
-            SYSTEM ADMIN
-        ========================= */}
+        {/* SYSTEM ADMIN */}
 
         <Route
           path="/admin"
           element={
-            <ProtectedRoute
-              allowedRoles={["System Admin"]}
-            >
+            <ProtectedRoute allowedRoles={["System Admin"]}>
               <AdminDashboard />
             </ProtectedRoute>
           }
@@ -137,9 +137,7 @@ function App() {
         <Route
           path="/admin/users"
           element={
-            <ProtectedRoute
-              allowedRoles={["System Admin"]}
-            >
+            <ProtectedRoute allowedRoles={["System Admin"]}>
               <UserManagement />
             </ProtectedRoute>
           }
@@ -148,25 +146,18 @@ function App() {
         <Route
           path="/admin/tickets"
           element={
-            <ProtectedRoute
-              allowedRoles={["System Admin"]}
-            >
+            <ProtectedRoute allowedRoles={["System Admin"]}>
               <AdminTickets />
             </ProtectedRoute>
           }
         />
 
-
-        {/* =========================
-            IT MANAGER
-        ========================= */}
+        {/* IT MANAGER */}
 
         <Route
           path="/manager"
           element={
-            <ProtectedRoute
-              allowedRoles={["IT Manager"]}
-            >
+            <ProtectedRoute allowedRoles={["IT Manager"]}>
               <ITManagerDashboard />
             </ProtectedRoute>
           }
@@ -186,17 +177,12 @@ function App() {
           }
         />
 
-
-        {/* =========================
-            ASSET MANAGER
-        ========================= */}
+        {/* ASSET MANAGER */}
 
         <Route
           path="/asset-manager"
           element={
-            <ProtectedRoute
-              allowedRoles={["Asset Manager"]}
-            >
+            <ProtectedRoute allowedRoles={["Asset Manager"]}>
               <AssetManagerDashboard />
             </ProtectedRoute>
           }
@@ -216,8 +202,83 @@ function App() {
           }
         />
 
-      </Routes>
+        {/* SLA */}
 
+        <Route
+          path="/sla-monitor"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "System Admin",
+                "IT Manager",
+              ]}
+            >
+              <SLAMonitor />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* REPORTS */}
+
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "System Admin",
+                "IT Manager",
+              ]}
+            >
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AUDIT */}
+
+        <Route
+          path="/audit-logs"
+          element={
+            <ProtectedRoute allowedRoles={["System Admin"]}>
+              <AuditLogs />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* KNOWLEDGE BASE */}
+
+        <Route
+          path="/knowledge"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "Employee",
+                "Technician",
+                "IT Manager",
+                "System Admin",
+                "Asset Manager",
+              ]}
+            >
+              <KnowledgeBase />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/knowledge/manage"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "System Admin",
+                "IT Manager",
+              ]}
+            >
+              <KnowledgeBaseManagement />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
     </BrowserRouter>
   );
 }

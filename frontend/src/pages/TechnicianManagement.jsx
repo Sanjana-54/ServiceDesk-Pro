@@ -1,31 +1,26 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-function TechnicianManagement() {
-  const navigate = useNavigate();
-
+export default function TechnicianManagement() {
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const fetchTechnicians = async () => {
+  const loadTechnicians = async () => {
     try {
       setLoading(true);
-
-      const response = await api.get(
-        "/users/technicians"
-      );
+      const response = await api.get("/management/technicians");
 
       setTechnicians(
-        response.data.technicians || []
+        response.data.technicians ||
+          response.data.users ||
+          response.data ||
+          []
       );
     } catch (error) {
       console.error(error);
-
-      setError(
-        error.response?.data?.message ||
-          "Unable to load technicians"
+      setMessage(
+        error.response?.data?.message || "Unable to load technicians."
       );
     } finally {
       setLoading(false);
@@ -33,164 +28,126 @@ function TechnicianManagement() {
   };
 
   useEffect(() => {
-    fetchTechnicians();
+    loadTechnicians();
   }, []);
 
+  const toggleStatus = async (technician) => {
+    try {
+      const newStatus =
+        technician.isActive === false ? true : false;
+
+      await api.patch(`/management/users/${technician._id}/status`, {
+        isActive: newStatus,
+      });
+
+      setMessage("Technician status updated.");
+      loadTechnicians();
+    } catch (error) {
+      setMessage(
+        error.response?.data?.message || "Unable to update status."
+      );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50">
-
-      <header className="border-b bg-white">
-
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Technician Management
-            </h1>
-
-            <p className="text-sm text-gray-500">
-              Manage IT support technicians
-            </p>
-          </div>
-
-          <button
-            onClick={() =>
-              navigate("/it-manager")
-            }
-            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-          >
-            ← Dashboard
-          </button>
-
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#101b3d]">
+            Technician Management
+          </h1>
+          <p className="mt-1 text-slate-500">
+            Manage technicians and monitor their availability.
+          </p>
         </div>
 
-      </header>
-
-
-      <main className="mx-auto max-w-7xl px-6 py-8">
-
-        {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600">
-            {error}
+        {message && (
+          <div className="mb-5 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            {message}
           </div>
         )}
 
-        <div className="mb-6 flex items-center justify-between">
-
-          <div>
-            <h2 className="text-xl font-bold">
-              Technicians
-            </h2>
-
-            <p className="text-sm text-gray-500">
-              Total technicians: {technicians.length}
-            </p>
-          </div>
-
-          <button
-            onClick={fetchTechnicians}
-            className="rounded-lg border bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
-          >
-            ↻ Refresh
-          </button>
-
-        </div>
-
-
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-
+        <div className="rounded-2xl bg-white shadow-sm">
           {loading ? (
-
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               Loading technicians...
-            </div>
-
+            </p>
           ) : technicians.length === 0 ? (
-
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               No technicians found.
-            </div>
-
+            </p>
           ) : (
-
             <div className="overflow-x-auto">
-
-              <table className="w-full">
-
-                <thead className="bg-gray-50">
-
-                  <tr>
-
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Name
-                    </th>
-
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Email
-                    </th>
-
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Role
-                    </th>
-
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b bg-slate-50 text-sm text-slate-500">
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Department</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Action</th>
                   </tr>
-
                 </thead>
 
-                <tbody className="divide-y">
-
+                <tbody>
                   {technicians.map((technician) => (
-
-                    <tr key={technician._id}>
-
-                      <td className="px-6 py-4">
-
-                        <div className="flex items-center gap-3">
-
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
-                            {technician.name
-                              ?.charAt(0)
-                              ?.toUpperCase()}
-                          </div>
-
-                          <span className="font-semibold">
-                            {technician.name}
-                          </span>
-
-                        </div>
-
+                    <tr
+                      key={technician._id}
+                      className="border-b last:border-0 hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-4 font-semibold text-[#101b3d]">
+                        {technician.name || "—"}
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {technician.email}
+                      <td className="px-6 py-4 text-slate-600">
+                        {technician.email || "—"}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-600">
+                        {technician.department?.name ||
+                          technician.department ||
+                          "—"}
                       </td>
 
                       <td className="px-6 py-4">
-
                         <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                          {technician.role}
+                          {technician.role || "Technician"}
                         </span>
-
                       </td>
 
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            technician.isActive === false
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {technician.isActive === false
+                            ? "Inactive"
+                            : "Active"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => toggleStatus(technician)}
+                          className="rounded-lg bg-[#101b3d] px-4 py-2 text-xs font-semibold text-white"
+                        >
+                          {technician.isActive === false
+                            ? "Activate"
+                            : "Deactivate"}
+                        </button>
+                      </td>
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
-
           )}
-
         </div>
-
-      </main>
-
+      </div>
     </div>
   );
 }
-
-export default TechnicianManagement;

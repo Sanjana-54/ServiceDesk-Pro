@@ -11,13 +11,19 @@ const categorySchema = new mongoose.Schema(
 
     description: {
       type: String,
-      trim: true,
       default: "",
+      trim: true,
     },
 
     active: {
       type: Boolean,
       default: true,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   {

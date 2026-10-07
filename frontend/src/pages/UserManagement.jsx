@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const roles = [
@@ -10,28 +9,27 @@ const roles = [
   "Asset Manager",
 ];
 
-function UserManagement() {
-  const navigate = useNavigate();
-
+export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const loadUsers = async () => {
     try {
       setLoading(true);
-      setError("");
 
-      const response = await api.get("/users");
+      const response = await api.get("/management/users");
 
-      setUsers(response.data.users || []);
+      setUsers(
+        response.data.users ||
+          response.data ||
+          []
+      );
     } catch (error) {
       console.error(error);
-
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to load users"
+          "Unable to load users."
       );
     } finally {
       setLoading(false);
@@ -42,255 +40,147 @@ function UserManagement() {
     loadUsers();
   }, []);
 
-  const changeRole = async (id, role) => {
+  const updateRole = async (userId, role) => {
     try {
-      setError("");
-      setMessage("");
-
-      await api.patch(`/users/${id}/role`, {
+      await api.patch(`/management/users/${userId}/role`, {
         role,
       });
 
-      setMessage("User role updated successfully");
-
-      await loadUsers();
+      setMessage("User role updated successfully.");
+      loadUsers();
     } catch (error) {
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to update role"
+          "Unable to update role."
       );
     }
   };
 
-  const deleteUser = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-
-    if (!confirmed) return;
-
+  const updateStatus = async (user) => {
     try {
-      setError("");
-      setMessage("");
+      await api.patch(
+        `/management/users/${user._id}/status`,
+        {
+          isActive: user.isActive === false,
+        }
+      );
 
-      await api.delete(`/users/${id}`);
-
-      setMessage("User deleted successfully");
-
-      await loadUsers();
+      setMessage("User status updated.");
+      loadUsers();
     } catch (error) {
-      setError(
+      setMessage(
         error.response?.data?.message ||
-          "Unable to delete user"
+          "Unable to update status."
       );
     }
-  };
-
-  const getRoleClass = (role) => {
-    if (role === "System Admin") {
-      return "bg-red-100 text-red-700";
-    }
-
-    if (role === "IT Manager") {
-      return "bg-purple-100 text-purple-700";
-    }
-
-    if (role === "Asset Manager") {
-      return "bg-orange-100 text-orange-700";
-    }
-
-    if (role === "Technician") {
-      return "bg-blue-100 text-blue-700";
-    }
-
-    return "bg-green-100 text-green-700";
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#101b3d]">
+            User Management
+          </h1>
 
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              User Management
-            </h1>
-
-            <p className="text-sm text-gray-500">
-              Manage ServiceDesk Pro users and roles
-            </p>
-          </div>
-
-          <button
-            onClick={() => navigate("/admin")}
-            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-          >
-            ← Dashboard
-          </button>
-
+          <p className="mt-1 text-slate-500">
+            Manage user roles and account status.
+          </p>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-6 py-8">
 
         {message && (
-          <div className="mb-5 rounded-lg bg-green-50 p-4 text-sm text-green-700">
+          <div className="mb-5 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
             {message}
           </div>
         )}
 
-        {error && (
-          <div className="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">
-            All Users
-          </h2>
-
-          <p className="text-sm text-gray-500">
-            Total users: {users.length}
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-
+        <div className="rounded-2xl bg-white shadow-sm">
           {loading ? (
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               Loading users...
-            </div>
+            </p>
           ) : users.length === 0 ? (
-            <div className="p-10 text-center text-gray-500">
+            <p className="p-10 text-center text-slate-500">
               No users found.
-            </div>
+            </p>
           ) : (
             <div className="overflow-x-auto">
-
-              <table className="w-full min-w-[1000px]">
-
-                <thead className="bg-gray-50">
-                  <tr>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      User
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Email
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Role
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Created
-                    </th>
-
-                    <th className="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-500">
-                      Action
-                    </th>
-
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b bg-slate-50 text-sm text-slate-500">
+                    <th className="px-5 py-4">Name</th>
+                    <th className="px-5 py-4">Email</th>
+                    <th className="px-5 py-4">Role</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4">Action</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y">
-
+                <tbody>
                   {users.map((user) => (
-
-                    <tr key={user._id}>
-
-                      <td className="px-5 py-5">
-
-                        <div className="flex items-center gap-3">
-
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
-                            {user.name
-                              ?.charAt(0)
-                              ?.toUpperCase()}
-                          </div>
-
-                          <span className="font-semibold text-gray-900">
-                            {user.name}
-                          </span>
-
-                        </div>
-
+                    <tr
+                      key={user._id}
+                      className="border-b last:border-0 hover:bg-slate-50"
+                    >
+                      <td className="px-5 py-4 font-semibold text-[#101b3d]">
+                        {user.name || "—"}
                       </td>
 
-                      <td className="px-5 py-5 text-sm text-gray-600">
-                        {user.email}
+                      <td className="px-5 py-4 text-slate-600">
+                        {user.email || "—"}
                       </td>
 
-                      <td className="px-5 py-5">
-
+                      <td className="px-5 py-4">
                         <select
-                          value={user.role}
+                          value={user.role || "Employee"}
                           onChange={(e) =>
-                            changeRole(
+                            updateRole(
                               user._id,
                               e.target.value
                             )
                           }
-                          className={`rounded-full border-0 px-3 py-2 text-xs font-semibold ${getRoleClass(
-                            user.role
-                          )}`}
+                          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#ff6b5f]"
                         >
-
                           {roles.map((role) => (
-                            <option
-                              key={role}
-                              value={role}
-                            >
+                            <option key={role} value={role}>
                               {role}
                             </option>
                           ))}
-
                         </select>
-
                       </td>
 
-                      <td className="px-5 py-5 text-sm text-gray-500">
-                        {user.createdAt
-                          ? new Date(
-                              user.createdAt
-                            ).toLocaleDateString()
-                          : "-"}
-                      </td>
-
-                      <td className="px-5 py-5">
-
-                        <button
-                          onClick={() =>
-                            deleteUser(user._id)
-                          }
-                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
+                      <td className="px-5 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            user.isActive === false
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
                         >
-                          Delete
-                        </button>
-
+                          {user.isActive === false
+                            ? "Inactive"
+                            : "Active"}
+                        </span>
                       </td>
 
+                      <td className="px-5 py-4">
+                        <button
+                          onClick={() => updateStatus(user)}
+                          className="rounded-lg bg-[#101b3d] px-4 py-2 text-xs font-semibold text-white"
+                        >
+                          {user.isActive === false
+                            ? "Activate"
+                            : "Deactivate"}
+                        </button>
+                      </td>
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
           )}
-
         </div>
-
-      </main>
-
+      </div>
     </div>
   );
 }
-
-export default UserManagement;
