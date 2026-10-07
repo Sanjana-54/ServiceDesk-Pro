@@ -23,6 +23,9 @@ import UserManagement from "./pages/UserManagement";
 import AdminTickets from "./pages/AdminTickets";
 
 import AssetManagement from "./pages/AssetManagement";
+import AssetAssignments from "./pages/AssetAssignments";
+import AssetLifecyclePage from "./pages/AssetLifecyclePage";
+
 import TechnicianManagement from "./pages/TechnicianManagement";
 import TicketManagement from "./pages/TicketManagement";
 
@@ -39,7 +42,9 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* AUTHENTICATION */}
+        {/* =========================
+            AUTHENTICATION
+        ========================= */}
 
         <Route
           path="/"
@@ -51,7 +56,9 @@ function App() {
           element={<Register />}
         />
 
-        {/* EMPLOYEE */}
+        {/* =========================
+            EMPLOYEE
+        ========================= */}
 
         <Route
           path="/employee"
@@ -80,7 +87,9 @@ function App() {
           }
         />
 
-        {/* TECHNICIAN */}
+        {/* =========================
+            TECHNICIAN
+        ========================= */}
 
         <Route
           path="/technician"
@@ -123,7 +132,9 @@ function App() {
           }
         />
 
-        {/* SYSTEM ADMIN */}
+        {/* =========================
+            SYSTEM ADMIN
+        ========================= */}
 
         <Route
           path="/admin"
@@ -152,7 +163,9 @@ function App() {
           }
         />
 
-        {/* IT MANAGER */}
+        {/* =========================
+            IT MANAGER
+        ========================= */}
 
         <Route
           path="/manager"
@@ -177,7 +190,9 @@ function App() {
           }
         />
 
-        {/* ASSET MANAGER */}
+        {/* =========================
+            ASSET MANAGER
+        ========================= */}
 
         <Route
           path="/asset-manager"
@@ -187,6 +202,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Asset Inventory */}
 
         <Route
           path="/assets"
@@ -202,7 +219,31 @@ function App() {
           }
         />
 
-        {/* SLA */}
+        {/* Asset Assignments */}
+
+        <Route
+          path="/asset-assignments"
+          element={
+            <ProtectedRoute allowedRoles={["Asset Manager"]}>
+              <AssetAssignments />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Warranty & Lifecycle */}
+
+        <Route
+          path="/asset-lifecycle"
+          element={
+            <ProtectedRoute allowedRoles={["Asset Manager"]}>
+              <AssetLifecyclePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =========================
+            SLA
+        ========================= */}
 
         <Route
           path="/sla-monitor"
@@ -218,7 +259,9 @@ function App() {
           }
         />
 
-        {/* REPORTS */}
+        {/* =========================
+            REPORTS
+        ========================= */}
 
         <Route
           path="/reports"
@@ -234,7 +277,9 @@ function App() {
           }
         />
 
-        {/* AUDIT */}
+        {/* =========================
+            AUDIT LOGS
+        ========================= */}
 
         <Route
           path="/audit-logs"
@@ -245,7 +290,9 @@ function App() {
           }
         />
 
-        {/* KNOWLEDGE BASE */}
+        {/* =========================
+            KNOWLEDGE BASE
+        ========================= */}
 
         <Route
           path="/knowledge"
