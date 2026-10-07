@@ -1,48 +1,54 @@
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
 import api from "../services/api";
 
 function AssetManagement() {
   const navigate = useNavigate();
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const [assets, setAssets] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const [showForm, setShowForm] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const [form, setForm] = useState({
-    assetName: "",
-    assetType: "",
     assetTag: "",
+    name: "",
+    category: "Laptop",
     serialNumber: "",
     purchaseDate: "",
-    description: "",
+    notes: "",
   });
+
+  // =========================================
+  // LOAD ASSETS + EMPLOYEES
+  // =========================================
 
   const loadData = async () => {
     try {
       setLoading(true);
-
-      const [assetsResponse, usersResponse] = await Promise.all([
-        api.get("/assets"),
-        api.get("/assets/users"),
-      ]);
-
-      setAssets(assetsResponse.data.assets || []);
-      setUsers(usersResponse.data.users || []);
-
       setError("");
+
+      const [assetsResponse, employeesResponse] =
+        await Promise.all([
+          api.get("/assets"),
+          api.get("/assets/employees"),
+        ]);
+
+      setAssets(assetsResponse.data?.assets || []);
+      setEmployees(employeesResponse.data?.employees || []);
     } catch (error) {
-      console.error(error);
+      console.error("Load asset data error:", error);
 
       setError(
-        error.response?.data?.message || "Unable to load assets"
+        error.response?.data?.message ||
+          "Unable to load asset information."
       );
     } finally {
       setLoading(false);
@@ -53,65 +59,117 @@ function AssetManagement() {
     loadData();
   }, []);
 
+  // =========================================
+  // FORM CHANGE
+  // =========================================
+
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setError("");
   };
+
+  // =========================================
+  // CREATE ASSET
+  // =========================================
 
   const createAsset = async (e) => {
     e.preventDefault();
 
+    setError("");
+    setMessage("");
+
+    if (!form.assetTag.trim()) {
+      setError("Asset tag is required.");
+      return;
+    }
+
+    if (!form.name.trim()) {
+      setError("Asset name is required.");
+      return;
+    }
+
+    if (!form.category.trim()) {
+      setError("Asset category is required.");
+      return;
+    }
+
     try {
-      setError("");
-      setMessage("");
+      setCreating(true);
 
-      await api.post("/assets", form);
+      await api.post("/assets", {
+        assetTag: form.assetTag.trim(),
+        name: form.name.trim(),
+        category: form.category.trim(),
+        serialNumber: form.serialNumber.trim(),
+        purchaseDate: form.purchaseDate || null,
+        notes: form.notes.trim(),
+      });
 
-      setMessage("Asset created successfully");
+      setMessage("Asset created successfully.");
 
       setForm({
-        assetName: "",
-        assetType: "",
         assetTag: "",
+        name: "",
+        category: "Laptop",
         serialNumber: "",
         purchaseDate: "",
-        description: "",
+        notes: "",
       });
 
       setShowForm(false);
 
       await loadData();
     } catch (error) {
+      console.error("Create asset error:", error);
+
       setError(
-        error.response?.data?.message || "Unable to create asset"
+        error.response?.data?.message ||
+          "Unable to create asset."
       );
+    } finally {
+      setCreating(false);
     }
   };
 
-  const assignAsset = async (assetId, userId) => {
+  // =========================================
+  // ASSIGN / UNASSIGN ASSET
+  // =========================================
+
+  const assignAsset = async (assetId, employeeId) => {
     try {
       setError("");
       setMessage("");
 
       await api.patch(`/assets/${assetId}/assign`, {
-        userId: userId || null,
+        userId: employeeId || null,
       });
 
       setMessage(
-        userId
-          ? "Asset assigned successfully"
-          : "Asset returned successfully"
+        employeeId
+          ? "Asset assigned successfully."
+          : "Asset returned successfully."
       );
 
       await loadData();
     } catch (error) {
+      console.error("Assign asset error:", error);
+
       setError(
-        error.response?.data?.message || "Unable to assign asset"
+        error.response?.data?.message ||
+          "Unable to update asset assignment."
       );
     }
   };
+
+  // =========================================
+  // DELETE ASSET
+  // =========================================
 
   const deleteAsset = async (assetId) => {
     const confirmed = window.confirm(
@@ -126,273 +184,588 @@ function AssetManagement() {
 
       await api.delete(`/assets/${assetId}`);
 
-      setMessage("Asset deleted successfully");
+      setMessage("Asset deleted successfully.");
 
       await loadData();
     } catch (error) {
+      console.error("Delete asset error:", error);
+
       setError(
-        error.response?.data?.message || "Unable to delete asset"
+        error.response?.data?.message ||
+          "Unable to delete asset."
       );
     }
   };
 
-  const statusClass = (status) => {
+  // =========================================
+  // STATUS STYLE
+  // =========================================
+
+  const getStatusStyle = (status) => {
     if (status === "Available") {
-      return "bg-green-100 text-green-700";
+      return "bg-emerald-50 text-emerald-700 border border-emerald-100";
     }
 
     if (status === "Assigned") {
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-50 text-blue-700 border border-blue-100";
     }
 
-    if (status === "Maintenance") {
-      return "bg-yellow-100 text-yellow-700";
+    if (
+      status === "Maintenance" ||
+      status === "Under Repair"
+    ) {
+      return "bg-amber-50 text-amber-700 border border-amber-100";
     }
 
-    return "bg-gray-100 text-gray-700";
+    if (status === "Retired") {
+      return "bg-slate-100 text-slate-600 border border-slate-200";
+    }
+
+    return "bg-slate-50 text-slate-600 border border-slate-200";
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50">
+  // =========================================
+  // DISPLAY NAME
+  // =========================================
 
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+  const getAssetName = (asset) => {
+    return asset.name || asset.assetName || "Unnamed Asset";
+  };
+
+  const getAssetCategory = (asset) => {
+    return asset.category || asset.assetType || "Other";
+  };
+
+  // =========================================
+  // DASHBOARD
+  // =========================================
+
+  const totalAssets = assets.length;
+
+  const availableAssets = assets.filter(
+    (asset) => asset.status === "Available"
+  ).length;
+
+  const assignedAssets = assets.filter(
+    (asset) => asset.status === "Assigned"
+  ).length;
+
+  const repairAssets = assets.filter(
+    (asset) =>
+      asset.status === "Maintenance" ||
+      asset.status === "Under Repair"
+  ).length;
+
+  return (
+    <div className="min-h-screen bg-[#f5f7fb] text-[#172033]">
+
+      {/* =========================================
+          TOP HEADER
+      ========================================= */}
+
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-[1500px] items-center justify-between px-6 py-5">
 
           <div>
-            <h1 className="text-2xl font-bold">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff5d73]">
               Asset Management
+            </p>
+
+            <h1 className="mt-1 text-2xl font-bold text-[#172033]">
+              Asset Inventory
             </h1>
 
-            <p className="text-sm text-gray-500">
-              Manage company IT assets
+            <p className="mt-1 text-sm text-slate-500">
+              Manage company hardware, software and assignments.
             </p>
           </div>
 
-          <button
-            onClick={() => navigate("/asset-manager")}
-            className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
-          >
-            ← Dashboard
-          </button>
+          <div className="flex items-center gap-3">
 
+            <button
+              onClick={() => navigate("/asset-manager")}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#172033] shadow-sm transition hover:bg-slate-50"
+            >
+              ← Dashboard
+            </button>
+
+            <div className="hidden items-center gap-3 sm:flex">
+              <div className="text-right">
+                <p className="text-sm font-bold">
+                  {user?.name || "Asset Manager"}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  {user?.role || "Asset Manager"}
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#273b7a] to-[#ff5d73] text-sm font-bold text-white">
+                {(user?.name || "A")
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      {/* =========================================
+          MAIN CONTENT
+      ========================================= */}
+
+      <main className="mx-auto max-w-[1500px] px-6 py-8">
+
+        {/* SUCCESS MESSAGE */}
 
         {message && (
-          <div className="mb-5 rounded-lg bg-green-50 p-4 text-sm text-green-700">
+          <div className="mb-5 rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
             {message}
           </div>
         )}
 
+        {/* ERROR MESSAGE */}
+
         {error && (
-          <div className="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
             {error}
           </div>
         )}
 
-        <div className="mb-6 flex items-center justify-between">
+        {/* =========================================
+            HERO
+        ========================================= */}
+
+        <section className="mb-7 overflow-hidden rounded-2xl bg-gradient-to-r from-[#17245c] via-[#44316e] to-[#ff5d73] p-7 text-white shadow-lg">
+
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
+                Asset Operations
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold md:text-3xl">
+                Know where every asset stands
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
+                Manage inventory, assignments, asset status and
+                the complete IT asset lifecycle.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-7 py-5 text-center backdrop-blur-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-white/70">
+                Total Assets
+              </p>
+
+              <p className="mt-1 text-4xl font-bold">
+                {totalAssets}
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        {/* =========================================
+            STAT CARDS
+        ========================================= */}
+
+        <section className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              Total Assets
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-3xl font-bold text-[#172033]">
+                {totalAssets}
+              </p>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                ▣
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              Available
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-3xl font-bold text-[#172033]">
+                {availableAssets}
+              </p>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                ✓
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              Assigned
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-3xl font-bold text-[#172033]">
+                {assignedAssets}
+              </p>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                ♙
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              Under Repair
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-3xl font-bold text-[#172033]">
+                {repairAssets}
+              </p>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+                ⚙
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        {/* =========================================
+            ASSET SECTION HEADER
+        ========================================= */}
+
+        <section className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
           <div>
-            <h2 className="text-xl font-bold">
-              Assets
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff5d73]">
+              Inventory
+            </p>
+
+            <h2 className="mt-1 text-2xl font-bold text-[#172033]">
+              Company Assets
             </h2>
 
-            <p className="text-sm text-gray-500">
-              Total assets: {assets.length}
+            <p className="mt-1 text-sm text-slate-500">
+              View, create and assign IT assets.
             </p>
           </div>
 
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            onClick={() => {
+              setShowForm(!showForm);
+              setError("");
+              setMessage("");
+            }}
+            className="rounded-xl bg-[#ff5d73] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#f34f67]"
           >
-            {showForm ? "Close" : "+ Add Asset"}
+            {showForm ? "Close Form" : "+ Add Asset"}
           </button>
 
-        </div>
+        </section>
+
+        {/* =========================================
+            CREATE ASSET FORM
+        ========================================= */}
 
         {showForm && (
           <form
             onSubmit={createAsset}
-            className="mb-8 rounded-xl border bg-white p-6 shadow-sm"
+            className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
 
-            <h3 className="mb-5 text-lg font-bold">
-              Add New Asset
-            </h3>
+            <div className="mb-6">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff5d73]">
+                New Asset
+              </p>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <h3 className="mt-1 text-xl font-bold text-[#172033]">
+                Add a company asset
+              </h3>
 
-              <input
-                name="assetName"
-                placeholder="Asset Name"
-                value={form.assetName}
-                onChange={handleChange}
-                required
-                className="rounded-lg border px-4 py-3"
-              />
+              <p className="mt-1 text-sm text-slate-500">
+                Enter the basic information for the new asset.
+              </p>
+            </div>
 
-              <input
-                name="assetType"
-                placeholder="Asset Type"
-                value={form.assetType}
-                onChange={handleChange}
-                required
-                className="rounded-lg border px-4 py-3"
-              />
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-              <input
-                name="assetTag"
-                placeholder="Asset Tag"
-                value={form.assetTag}
-                onChange={handleChange}
-                required
-                className="rounded-lg border px-4 py-3"
-              />
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Asset Tag
+                </label>
 
-              <input
-                name="serialNumber"
-                placeholder="Serial Number"
-                value={form.serialNumber}
-                onChange={handleChange}
-                className="rounded-lg border px-4 py-3"
-              />
+                <input
+                  name="assetTag"
+                  value={form.assetTag}
+                  onChange={handleChange}
+                  placeholder="AST-001"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                />
+              </div>
 
-              <input
-                type="date"
-                name="purchaseDate"
-                value={form.purchaseDate}
-                onChange={handleChange}
-                className="rounded-lg border px-4 py-3"
-              />
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Asset Name
+                </label>
 
-              <input
-                name="description"
-                placeholder="Description"
-                value={form.description}
-                onChange={handleChange}
-                className="rounded-lg border px-4 py-3"
-              />
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Dell Latitude Laptop"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Category
+                </label>
+
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                >
+                  <option value="Laptop">Laptop</option>
+                  <option value="Desktop">Desktop</option>
+                  <option value="Monitor">Monitor</option>
+                  <option value="Printer">Printer</option>
+                  <option value="Mobile">Mobile</option>
+                  <option value="Tablet">Tablet</option>
+                  <option value="Network">Network</option>
+                  <option value="Software">Software</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Serial Number
+                </label>
+
+                <input
+                  name="serialNumber"
+                  value={form.serialNumber}
+                  onChange={handleChange}
+                  placeholder="Serial number"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Purchase Date
+                </label>
+
+                <input
+                  type="date"
+                  name="purchaseDate"
+                  value={form.purchaseDate}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Notes
+                </label>
+
+                <input
+                  name="notes"
+                  value={form.notes}
+                  onChange={handleChange}
+                  placeholder="Additional information"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#ff5d73] focus:bg-white focus:ring-2 focus:ring-[#ff5d73]/10"
+                />
+              </div>
 
             </div>
 
-            <button
-              type="submit"
-              className="mt-5 rounded-lg bg-green-600 px-5 py-2.5 font-semibold text-white hover:bg-green-700"
-            >
-              Create Asset
-            </button>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="submit"
+                disabled={creating}
+                className="rounded-xl bg-[#17245c] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#111b49] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {creating ? "Creating..." : "Create Asset"}
+              </button>
+            </div>
 
           </form>
         )}
 
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+        {/* =========================================
+            ASSET TABLE
+        ========================================= */}
+
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+          <div className="border-b border-slate-100 px-6 py-5">
+            <div className="flex items-center justify-between">
+
+              <div>
+                <h3 className="text-lg font-bold text-[#172033]">
+                  Asset Inventory
+                </h3>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {totalAssets} asset
+                  {totalAssets !== 1 ? "s" : ""} registered
+                </p>
+              </div>
+
+              <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                {totalAssets} Total
+              </div>
+
+            </div>
+          </div>
 
           {loading ? (
-            <div className="p-10 text-center text-gray-500">
-              Loading assets...
+            <div className="px-6 py-16 text-center">
+              <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#ff5d73]" />
+
+              <p className="text-sm font-medium text-slate-500">
+                Loading assets...
+              </p>
             </div>
           ) : assets.length === 0 ? (
-            <div className="p-10 text-center text-gray-500">
-              No assets found.
+            <div className="px-6 py-16 text-center">
+
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-2xl text-slate-400">
+                ▣
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-[#172033]">
+                No assets found
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                Your asset inventory is currently empty.
+                Click "Add Asset" to create your first company
+                asset.
+              </p>
+
             </div>
           ) : (
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[1200px]">
+              <table className="w-full min-w-[1100px]">
 
-                <thead className="bg-gray-50">
+                <thead className="bg-slate-50">
+
                   <tr>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                       Asset
                     </th>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                       Tag
                     </th>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
-                      Type
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Category
                     </th>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                       Status
                     </th>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                       Assigned To
                     </th>
 
-                    <th className="px-5 py-4 text-left text-xs uppercase text-gray-500">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                       Action
                     </th>
 
                   </tr>
+
                 </thead>
 
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-slate-100">
 
                   {assets.map((asset) => (
-                    <tr key={asset._id}>
 
-                      <td className="px-5 py-5">
+                    <tr
+                      key={asset._id}
+                      className="transition hover:bg-slate-50"
+                    >
 
-                        <p className="font-semibold">
-                          {asset.assetName}
+                      <td className="px-6 py-5">
+
+                        <p className="font-bold text-[#172033]">
+                          {getAssetName(asset)}
                         </p>
 
-                        <p className="text-xs text-gray-500">
-                          {asset.serialNumber || "No serial number"}
+                        <p className="mt-1 text-xs text-slate-500">
+                          {asset.serialNumber ||
+                            "No serial number"}
                         </p>
 
                       </td>
 
-                      <td className="px-5 py-5 text-sm">
+                      <td className="px-6 py-5 text-sm font-medium text-slate-700">
                         {asset.assetTag}
                       </td>
 
-                      <td className="px-5 py-5 text-sm">
-                        {asset.assetType}
+                      <td className="px-6 py-5 text-sm text-slate-600">
+                        {getAssetCategory(asset)}
                       </td>
 
-                      <td className="px-5 py-5">
+                      <td className="px-6 py-5">
 
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
+                          className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold ${getStatusStyle(
                             asset.status
                           )}`}
                         >
-                          {asset.status}
+                          {asset.status || "Available"}
                         </span>
 
                       </td>
 
-                      <td className="px-5 py-5">
+                      <td className="px-6 py-5">
 
                         <select
-                          value={asset.assignedTo?._id || ""}
+                          value={
+                            asset.assignedTo?._id || ""
+                          }
                           onChange={(e) =>
                             assignAsset(
                               asset._id,
                               e.target.value
                             )
                           }
-                          className="rounded-lg border px-3 py-2 text-sm"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-[#ff5d73]"
                         >
 
                           <option value="">
                             Available
                           </option>
 
-                          {users.map((user) => (
+                          {employees.map((employee) => (
                             <option
-                              key={user._id}
-                              value={user._id}
+                              key={employee._id}
+                              value={employee._id}
                             >
-                              {user.name}
+                              {employee.name}
                             </option>
                           ))}
 
@@ -400,13 +773,13 @@ function AssetManagement() {
 
                       </td>
 
-                      <td className="px-5 py-5">
+                      <td className="px-6 py-5">
 
                         <button
                           onClick={() =>
                             deleteAsset(asset._id)
                           }
-                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
+                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100"
                         >
                           Delete
                         </button>
@@ -414,6 +787,7 @@ function AssetManagement() {
                       </td>
 
                     </tr>
+
                   ))}
 
                 </tbody>
@@ -426,7 +800,6 @@ function AssetManagement() {
         </div>
 
       </main>
-
     </div>
   );
 }
