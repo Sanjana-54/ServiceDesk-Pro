@@ -23,10 +23,6 @@ export default function Reports() {
           api.get("/reports/ticket-summary"),
         ]);
 
-      // -----------------------------
-      // SAFELY READ PERFORMANCE DATA
-      // -----------------------------
-
       const performanceData =
         performanceResponse.data?.performance ??
         performanceResponse.data?.data ??
@@ -37,10 +33,6 @@ export default function Reports() {
       } else {
         setPerformance([]);
       }
-
-      // -----------------------------
-      // SAFELY READ SUMMARY DATA
-      // -----------------------------
 
       const summaryData =
         summaryResponse.data?.summary ??
@@ -81,10 +73,6 @@ export default function Reports() {
     navigate("/");
   };
 
-  // -----------------------------
-  // SUMMARY VALUES
-  // -----------------------------
-
   const total =
     Number(
       summary.total ??
@@ -124,12 +112,12 @@ export default function Reports() {
           <div className="border-b border-slate-200 px-6 py-6">
             <div className="flex items-center gap-3">
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#182653] to-[#ff5d73] font-bold text-white shadow-md">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#182653] to-[#ff5d73] text-lg font-bold text-white shadow-md">
                 SD
               </div>
 
               <div>
-                <h1 className="font-bold text-[#101b3d]">
+                <h1 className="text-lg font-bold text-[#101b3d]">
                   ServiceDesk Pro
                 </h1>
 
@@ -149,34 +137,48 @@ export default function Reports() {
 
             <nav className="mt-4 space-y-2">
 
-              <NavItem
-                label="Dashboard"
+              <SidebarItem
                 icon="▣"
+                label="Dashboard"
+                onClick={() => navigate("/manager")}
+              />
+
+              <SidebarItem
+                icon="▥"
+                label="Ticket Management"
                 onClick={() =>
-                  navigate(
-                    user.role === "System Admin"
-                      ? "/admin"
-                      : "/manager"
-                  )
+                  navigate("/ticket-management")
                 }
               />
 
-              <NavItem
-                label="SLA Monitoring"
+              <SidebarItem
+                icon="♙"
+                label="Technicians"
+                onClick={() =>
+                  navigate("/technician-management")
+                }
+              />
+
+              <SidebarItem
                 icon="◷"
-                onClick={() => navigate("/sla-monitor")}
+                label="SLA Monitoring"
+                onClick={() =>
+                  navigate("/sla-monitor")
+                }
               />
 
-              <NavItem
+              <SidebarItem
                 active
-                label="Reports"
                 icon="▤"
+                label="Reports"
               />
 
-              <NavItem
-                label="Knowledge Base"
+              <SidebarItem
                 icon="?"
-                onClick={() => navigate("/knowledge")}
+                label="Knowledge Base"
+                onClick={() =>
+                  navigate("/knowledge")
+                }
               />
 
             </nav>
@@ -185,20 +187,26 @@ export default function Reports() {
           <div className="border-t border-slate-200 p-4">
 
             <div className="rounded-xl bg-slate-50 p-3">
+              <div className="flex items-center gap-3">
 
-              <p className="text-sm font-semibold text-[#101b3d]">
-                {user.name || "User"}
-              </p>
+                <Avatar name={user.name} />
 
-              <p className="text-xs text-slate-500">
-                {user.role || "IT Manager"}
-              </p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-[#101b3d]">
+                    {user.name || "IT Manager"}
+                  </p>
 
+                  <p className="text-xs text-slate-500">
+                    IT Manager
+                  </p>
+                </div>
+
+              </div>
             </div>
 
             <button
               onClick={logout}
-              className="mt-3 w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              className="mt-3 w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
             >
               Logout
             </button>
@@ -221,20 +229,27 @@ export default function Reports() {
               </p>
             </div>
 
-            <button
-              onClick={logout}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-3">
+
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-semibold text-[#101b3d]">
+                  {user.name || "IT Manager"}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  IT Manager
+                </p>
+              </div>
+
+              <Avatar name={user.name} />
+
+            </div>
 
           </header>
 
           <div className="p-6 lg:p-10">
 
-            {/* PAGE TITLE */}
             <section>
-
               <p className="text-sm font-semibold text-[#ff5d73]">
                 Reports & Analytics
               </p>
@@ -246,17 +261,15 @@ export default function Reports() {
               <p className="mt-2 text-sm text-slate-500 lg:text-base">
                 Understand ticket volume and technician performance.
               </p>
-
             </section>
 
-            {/* ERROR */}
             {error && (
               <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            {/* SUMMARY */}
+            {/* SUMMARY CARDS */}
             <section className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
               <StatCard
@@ -453,14 +466,12 @@ export default function Reports() {
                               <div className="flex items-center gap-3">
 
                                 <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
-
                                   <div
                                     className="h-full rounded-full bg-gradient-to-r from-[#182653] to-[#ff5d73]"
                                     style={{
                                       width: `${percentage}%`,
                                     }}
                                   />
-
                                 </div>
 
                                 <span className="text-xs font-semibold text-slate-600">
@@ -486,12 +497,13 @@ export default function Reports() {
 
           </div>
         </main>
+
       </div>
     </div>
   );
 }
 
-function NavItem({
+function SidebarItem({
   label,
   icon,
   active,
@@ -506,12 +518,24 @@ function NavItem({
           : "text-slate-600 hover:bg-slate-50"
       }`}
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+      <span
+        className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+          active ? "bg-white/10" : "bg-slate-100"
+        }`}
+      >
         {icon}
       </span>
 
       {label}
     </button>
+  );
+}
+
+function Avatar({ name }) {
+  return (
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#182653] to-[#ff5d73] text-sm font-bold text-white">
+      {(name || "M").charAt(0).toUpperCase()}
+    </div>
   );
 }
 
