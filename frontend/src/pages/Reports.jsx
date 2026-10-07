@@ -23,21 +23,44 @@ export default function Reports() {
           api.get("/reports/ticket-summary"),
         ]);
 
-      setPerformance(
-        performanceResponse.data.performance ||
-          performanceResponse.data.data ||
-          performanceResponse.data ||
-          []
-      );
+      // -----------------------------
+      // SAFELY READ PERFORMANCE DATA
+      // -----------------------------
 
-      setSummary(
-        summaryResponse.data.summary ||
-          summaryResponse.data.data ||
-          summaryResponse.data ||
-          {}
-      );
+      const performanceData =
+        performanceResponse.data?.performance ??
+        performanceResponse.data?.data ??
+        [];
+
+      if (Array.isArray(performanceData)) {
+        setPerformance(performanceData);
+      } else {
+        setPerformance([]);
+      }
+
+      // -----------------------------
+      // SAFELY READ SUMMARY DATA
+      // -----------------------------
+
+      const summaryData =
+        summaryResponse.data?.summary ??
+        summaryResponse.data?.data ??
+        {};
+
+      if (
+        summaryData &&
+        typeof summaryData === "object" &&
+        !Array.isArray(summaryData)
+      ) {
+        setSummary(summaryData);
+      } else {
+        setSummary({});
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Reports error:", err);
+
+      setPerformance([]);
+      setSummary({});
 
       setError(
         err.response?.data?.message ||
@@ -58,26 +81,38 @@ export default function Reports() {
     navigate("/");
   };
 
+  // -----------------------------
+  // SUMMARY VALUES
+  // -----------------------------
+
   const total =
-    summary.total ||
-    summary.totalTickets ||
-    summary.count ||
-    0;
+    Number(
+      summary.total ??
+        summary.totalTickets ??
+        summary.count ??
+        0
+    ) || 0;
 
   const open =
-    summary.open ||
-    summary.openTickets ||
-    0;
+    Number(
+      summary.open ??
+        summary.openTickets ??
+        0
+    ) || 0;
 
   const progress =
-    summary.inProgress ||
-    summary.inProgressTickets ||
-    0;
+    Number(
+      summary.inProgress ??
+        summary.inProgressTickets ??
+        0
+    ) || 0;
 
   const resolved =
-    summary.resolved ||
-    summary.resolvedTickets ||
-    0;
+    Number(
+      summary.resolved ??
+        summary.resolvedTickets ??
+        0
+    ) || 0;
 
   return (
     <div className="min-h-screen bg-[#f5f7fb]">
@@ -150,13 +185,15 @@ export default function Reports() {
           <div className="border-t border-slate-200 p-4">
 
             <div className="rounded-xl bg-slate-50 p-3">
+
               <p className="text-sm font-semibold text-[#101b3d]">
                 {user.name || "User"}
               </p>
 
               <p className="text-xs text-slate-500">
-                {user.role || "Manager"}
+                {user.role || "IT Manager"}
               </p>
+
             </div>
 
             <button
@@ -195,7 +232,9 @@ export default function Reports() {
 
           <div className="p-6 lg:p-10">
 
+            {/* PAGE TITLE */}
             <section>
+
               <p className="text-sm font-semibold text-[#ff5d73]">
                 Reports & Analytics
               </p>
@@ -207,10 +246,12 @@ export default function Reports() {
               <p className="mt-2 text-sm text-slate-500 lg:text-base">
                 Understand ticket volume and technician performance.
               </p>
+
             </section>
 
+            {/* ERROR */}
             {error && (
-              <div className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 {error}
               </div>
             )}
@@ -248,7 +289,7 @@ export default function Reports() {
 
             </section>
 
-            {/* REPORT TABLE */}
+            {/* TECHNICIAN PERFORMANCE */}
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
               <div className="flex items-center justify-between">
@@ -265,15 +306,16 @@ export default function Reports() {
 
                 <button
                   onClick={loadReports}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  disabled={loading}
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                 >
-                  Refresh
+                  {loading ? "Loading..." : "Refresh"}
                 </button>
 
               </div>
 
               {loading ? (
-                <div className="py-12 text-center text-slate-500">
+                <div className="py-16 text-center text-slate-500">
                   Loading reports...
                 </div>
               ) : performance.length === 0 ? (
@@ -298,7 +340,6 @@ export default function Reports() {
                   <table className="w-full min-w-[750px]">
 
                     <thead className="bg-slate-50">
-
                       <tr>
 
                         <th className="px-5 py-4 text-left text-xs uppercase tracking-wide text-slate-500">
@@ -322,7 +363,6 @@ export default function Reports() {
                         </th>
 
                       </tr>
-
                     </thead>
 
                     <tbody className="divide-y">
@@ -330,41 +370,60 @@ export default function Reports() {
                       {performance.map((item, index) => {
 
                         const name =
-                          item.technician?.name ||
-                          item.technicianName ||
-                          item.name ||
+                          item?.technician?.name ||
+                          item?.technicianName ||
+                          item?.name ||
                           `Technician ${index + 1}`;
 
                         const assigned =
-                          item.assigned ||
-                          item.assignedTickets ||
-                          0;
+                          Number(
+                            item?.assigned ??
+                              item?.assignedTickets ??
+                              0
+                          ) || 0;
 
-                        const resolved =
-                          item.resolved ||
-                          item.resolvedTickets ||
-                          0;
+                        const resolvedCount =
+                          Number(
+                            item?.resolved ??
+                              item?.resolvedTickets ??
+                              0
+                          ) || 0;
 
                         const openTickets =
-                          item.open ||
-                          item.openTickets ||
-                          0;
+                          Number(
+                            item?.open ??
+                              item?.openTickets ??
+                              0
+                          ) || 0;
 
                         const percentage =
                           assigned > 0
-                            ? Math.round(
-                                (resolved / assigned) * 100
+                            ? Math.min(
+                                Math.round(
+                                  (resolvedCount /
+                                    assigned) *
+                                    100
+                                ),
+                                100
                               )
                             : 0;
 
                         return (
-                          <tr key={item._id || index}>
+                          <tr
+                            key={
+                              item?._id ||
+                              item?.technician?._id ||
+                              index
+                            }
+                            className="hover:bg-slate-50"
+                          >
 
                             <td className="px-5 py-5">
+
                               <div className="flex items-center gap-3">
 
                                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#ff5d73] to-[#a74375] text-xs font-bold text-white">
-                                  {name
+                                  {String(name)
                                     .charAt(0)
                                     .toUpperCase()}
                                 </div>
@@ -374,6 +433,7 @@ export default function Reports() {
                                 </span>
 
                               </div>
+
                             </td>
 
                             <td className="px-5 py-5 text-sm text-slate-600">
@@ -381,7 +441,7 @@ export default function Reports() {
                             </td>
 
                             <td className="px-5 py-5 text-sm text-slate-600">
-                              {resolved}
+                              {resolvedCount}
                             </td>
 
                             <td className="px-5 py-5 text-sm text-slate-600">
@@ -393,15 +453,14 @@ export default function Reports() {
                               <div className="flex items-center gap-3">
 
                                 <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
+
                                   <div
                                     className="h-full rounded-full bg-gradient-to-r from-[#182653] to-[#ff5d73]"
                                     style={{
-                                      width: `${Math.min(
-                                        percentage,
-                                        100
-                                      )}%`,
+                                      width: `${percentage}%`,
                                     }}
                                   />
+
                                 </div>
 
                                 <span className="text-xs font-semibold text-slate-600">
@@ -484,6 +543,7 @@ function StatCard({
         </div>
 
       </div>
+
     </div>
   );
 }
